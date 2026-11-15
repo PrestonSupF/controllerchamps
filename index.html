@@ -167,7 +167,7 @@
         firebase.initializeApp(firebaseConfig);
         const dbRef = firebase.database().ref('matchState');
 
-        // Helper to strip Geyser/Floodgate dot prefixes (e.g. ".Redgoesbrr" -> "Redgoesbrr")
+        // Helper to strip Geyser/Floodgate dot prefix solely for text display
         function sanitizePlayerName(name) {
             if (!name) return "Waiting...";
             return name.startsWith('.') ? name.slice(1) : name;
@@ -186,7 +186,9 @@
 
             document.getElementById('p1-name').innerText = cleanP1;
             document.getElementById('p1-score').innerText = p1Score;
-            document.getElementById('p1-head').src = `https://api.mcheads.org/head/${encodeURIComponent(cleanP1)}/64`;
+            
+            // Uses rawP1 (retaining the dot) so mcheads successfully fetches the Bedrock skin
+            document.getElementById('p1-head').src = `https://api.mcheads.org/head/${encodeURIComponent(rawP1)}/64`;
             document.getElementById('p1-hp').style.width = `${Math.max(0, Math.min(100, (p1Hp / 20) * 100))}%`;
 
             // --- Player 2 Data ---
@@ -197,7 +199,9 @@
 
             document.getElementById('p2-name').innerText = cleanP2;
             document.getElementById('p2-score').innerText = p2Score;
-            document.getElementById('p2-head').src = `https://api.mcheads.org/head/${encodeURIComponent(cleanP2)}/64`;
+            
+            // Uses rawP2 (retaining the dot) for the skin lookup
+            document.getElementById('p2-head').src = `https://api.mcheads.org/head/${encodeURIComponent(rawP2)}/64`;
             document.getElementById('p2-hp').style.width = `${Math.max(0, Math.min(100, (p2Hp / 20) * 100))}%`;
         });
     </script>

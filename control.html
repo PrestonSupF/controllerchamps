@@ -79,13 +79,11 @@
         </div>
 
         <button type="button" onclick="resetMatch()">Reset Scores & Full Heal</button>
-        <div class="status" id="status">Synced & Ready</div>
+        <button type="button" class="secondary" onclick="copyObsLink()">📋 Copy OBS Link with Current State</button>
+        <div class="status" id="status">Active & Syncing</div>
     </div>
 
     <script>
-        let channel;
-        try { channel = new BroadcastChannel('pvp_hud_channel'); } catch (e) {}
-
         function save() {
             const data = {
                 p1Name: document.getElementById('p1Name').value,
@@ -96,8 +94,16 @@
                 p2Hp: parseFloat(document.getElementById('p2Hp').value) || 0,
                 gamemode: document.getElementById('gamemode').value
             };
-            try { localStorage.setItem('pvp_hud_state', JSON.stringify(data)); } catch (e) {}
-            if (channel) channel.postMessage(data);
+            
+            const jsonStr = JSON.stringify(data);
+            try { localStorage.setItem('pvp_hud_state', jsonStr); } catch (e) {}
+            
+            // If hosted on GitHub Pages or local web server, update history state so any iframe/opener linked to it updates
+            if (window.opener && !window.opener.closed) {
+                try {
+                    window.opener.location.hash = 'data=' + encodeURIComponent(jsonStr);
+                } catch (e) {}
+            }
         }
 
         function adjHp(id, delta) {
@@ -108,6 +114,7 @@
         }
 
         function setHp(id, val) {
+            document.getElementById('p1Hp' === id ? 'p1Hp' : id).value = val; // handles correct element
             document.getElementById(id).value = val;
             save();
         }
@@ -118,6 +125,25 @@
             document.getElementById('p1Hp').value = 20;
             document.getElementById('p2Hp').value = 20;
             save();
+        }
+
+        function copyObsLink() {
+            const data = {
+                p1Name: document.getElementById('p1Name').value,
+                p1Score: document.getElementById('p1Score').value,
+                p1Hp: parseFloat(document.getElementById('p1Hp').value) || 20,
+                p2Name: document.getElementById('p2Name').value,
+                p2Score: document.getElementById('p2Score').value,
+                p2Hp: parseFloat(document.getElementById('p2Hp').value) || 20,
+                gamemode: document.getElementById('gamemode').value
+            };
+            const base = window.location.href.replace('control.html', 'stream.html');
+            const fullLink = base + '#data=' + encodeURIComponent(JSON.stringify(data));
+            navigator.clipboard.writeText(fullLink);
+            
+            const status = document.getElementById('status');
+            status.innerText = "Copied OBS Link to Clipboard!";
+            setTimeout(() => { status.innerText = "Active & Syncing"; }, 3000);
         }
 
         window.onload = function() {

@@ -22,6 +22,9 @@
         .diamond-icon { width: 12px; height: 12px; background: #d4af37; transform: rotate(45deg); border: 1px solid #fff3c4; }
         .score-num { color: #fff; font-weight: 900; font-size: 20px; text-shadow: 0 2px 4px #000; }
     </style>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body>
     <div class="hud-container">
@@ -59,6 +62,20 @@
     </div>
 
     <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzWtIdrZ6Bq0YrCwODUg4HLh0wOdqN0eM",
+            authDomain: "champs-6c8c8.firebaseapp.com",
+            databaseURL: "https://champs-6c8c8-default-rtdb.firebaseio.com",
+            projectId: "champs-6c8c8",
+            storageBucket: "champs-6c8c8.firebasestorage.app",
+            messagingSenderId: "576944663680",
+            appId: "1:576944663680:web:ab03f20eddb32ce61fca65",
+            measurementId: "G-MWNKKPTNF5"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const dbRef = firebase.database().ref('matchState');
+
         let lastP1 = '', lastP2 = '';
 
         function renderHearts(containerId, hp) {
@@ -105,27 +122,9 @@
             document.getElementById('gamemode-display').innerText = data.gamemode || 'DIAMOND POT';
         }
 
-        function readState() {
-            // 1. Check URL hash (instant cross-engine sync)
-            if (window.location.hash.startsWith('#data=')) {
-                try {
-                    const jsonStr = decodeURIComponent(window.location.hash.substring(6));
-                    const parsed = JSON.parse(jsonStr);
-                    applyState(parsed);
-                    return;
-                } catch (e) {}
-            }
-            // 2. Fallback to localStorage
-            try {
-                const raw = localStorage.getItem('pvp_hud_state');
-                if (raw) applyState(JSON.parse(raw));
-            } catch (e) {}
-        }
-
-        window.addEventListener('hashchange', readState);
-        window.addEventListener('storage', readState);
-        setInterval(readState, 100);
-        readState();
+        dbRef.on('value', (snapshot) => {
+            applyState(snapshot.val());
+        });
     </script>
 </body>
 </html>

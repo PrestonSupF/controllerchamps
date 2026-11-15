@@ -56,24 +56,12 @@
             gap: 12px;
         }
 
-        .player-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
         .player-title {
             font-size: 14px;
             color: #888;
             text-transform: uppercase;
             letter-spacing: 1px;
-        }
-
-        /* Displays RAW name with dot on control panel */
-        .raw-name {
-            font-size: 18px;
-            font-weight: 700;
-            color: #fff;
+            margin-bottom: 4px;
         }
 
         .stats-grid {
@@ -93,6 +81,22 @@
             color: #aaa;
         }
 
+        input[type="text"] {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #ffaa00;
+        }
+
         .value-display {
             font-size: 16px;
             font-weight: 600;
@@ -100,6 +104,7 @@
             padding: 8px 12px;
             border-radius: 6px;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ddd;
         }
 
         .score-controls {
@@ -132,6 +137,20 @@
         button.decrement:hover {
             background: #444;
         }
+
+        .action-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .save-btn {
+            background: #28a745;
+            color: #fff;
+        }
+        .save-btn:hover {
+            background: #32b651;
+        }
     </style>
 </head>
 <body>
@@ -142,49 +161,51 @@
             
             <!-- Player 1 Control -->
             <div class="player-row">
-                <div class="player-header">
-                    <span class="player-title">Player 1 (Raw Name shown)</span>
-                    <span id="ctrl-p1-name" class="raw-name">Waiting...</span>
+                <div class="player-title">Player 1 Control</div>
+                <div class="stat-box" style="margin-bottom: 8px;">
+                    <label>Player Name (Supports . prefix for Bedrock)</label>
+                    <input type="text" id="p1-name-input" placeholder="e.g. .Redgoesbrr">
                 </div>
                 <div class="stats-grid">
                     <div class="stat-box">
-                        <label>Live HP</label>
+                        <label>Live HP Readout</label>
                         <div id="ctrl-p1-hp" class="value-display">20 / 20</div>
                     </div>
                     <div class="stat-box">
-                        <label>Score Control</label>
+                        <label>Score Control (<span id="ctrl-p1-score-val" style="color: #ffaa00;">0</span>)</label>
                         <div class="score-controls">
                             <button class="decrement" onclick="adjustScore('p1Score', -1)">-</button>
                             <button onclick="adjustScore('p1Score', 1)">+</button>
                         </div>
                     </div>
                 </div>
-                <div class="stat-box" style="margin-top: 4px;">
-                    <label>Current Score: <span id="ctrl-p1-score-val" style="color: #ffaa00;">0</span></label>
+                <div class="action-row">
+                    <button class="save-btn" onclick="updatePlayerName('p1Name', 'p1-name-input')">Update Player 1 Name</button>
                 </div>
             </div>
 
             <!-- Player 2 Control -->
             <div class="player-row">
-                <div class="player-header">
-                    <span class="player-title">Player 2 (Raw Name shown)</span>
-                    <span id="ctrl-p2-name" class="raw-name">Waiting...</span>
+                <div class="player-title">Player 2 Control</div>
+                <div class="stat-box" style="margin-bottom: 8px;">
+                    <label>Player Name (Supports . prefix for Bedrock)</label>
+                    <input type="text" id="p2-name-input" placeholder="e.g. Steve">
                 </div>
                 <div class="stats-grid">
                     <div class="stat-box">
-                        <label>Live HP</label>
+                        <label>Live HP Readout</label>
                         <div id="ctrl-p2-hp" class="value-display">20 / 20</div>
                     </div>
                     <div class="stat-box">
-                        <label>Score Control</label>
+                        <label>Score Control (<span id="ctrl-p2-score-val" style="color: #ffaa00;">0</span>)</label>
                         <div class="score-controls">
                             <button class="decrement" onclick="adjustScore('p2Score', -1)">-</button>
                             <button onclick="adjustScore('p2Score', 1)">+</button>
                         </div>
                     </div>
                 </div>
-                <div class="stat-box" style="margin-top: 4px;">
-                    <label>Current Score: <span id="ctrl-p2-score-val" style="color: #ffaa00;">0</span></label>
+                <div class="action-row">
+                    <button class="save-btn" onclick="updatePlayerName('p2Name', 'p2-name-input')">Update Player 2 Name</button>
                 </div>
             </div>
 
@@ -200,38 +221,47 @@
         firebase.initializeApp(firebaseConfig);
         const dbRef = firebase.database().ref('matchState');
 
-        // Listen for real-time updates and display RAW names (retaining dots)
+        let isInitialLoad = true;
+
+        // Listen for real-time updates to populate fields initially or reflect live HP/scores
         dbRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (!data) return;
 
-            // Player 1 - Raw name preserved
-            const p1Name = data.p1Name || "Waiting...";
-            const p1Hp = data.p1Hp !== undefined ? data.p1Hp : 20;
-            const p1Score = data.p1Score !== undefined ? data.p1Score : 0;
+            // Only fill input boxes on first load so typing isn't interrupted by background syncs
+            if (isInitialLoad) {
+                if (data.p1Name) document.getElementById('p1-name-input').value = data.p1Name;
+                if (data.p2Name) document.getElementById('p2-name-input').value = data.p2Name;
+                isInitialLoad = false;
+            }
 
-            document.getElementById('ctrl-p1-name').innerText = p1Name;
-            document.getElementById('ctrl-p1-hp').innerText = `${p1Hp} / 20`;
-            document.getElementById('ctrl-p1-score-val').innerText = p1Score;
+            // Update live readouts
+            document.getElementById('ctrl-p1-hp').innerText = `${data.p1Hp !== undefined ? data.p1Hp : 20} / 20`;
+            document.getElementById('ctrl-p1-score-val').innerText = data.p1Score !== undefined ? data.p1Score : 0;
 
-            // Player 2 - Raw name preserved
-            const p2Name = data.p2Name || "Waiting...";
-            const p2Hp = data.p2Hp !== undefined ? data.p2Hp : 20;
-            const p2Score = data.p2Score !== undefined ? data.p2Score : 0;
-
-            document.getElementById('ctrl-p2-name').innerText = p2Name;
-            document.getElementById('ctrl-p2-hp').innerText = `${p2Hp} / 20`;
-            document.getElementById('ctrl-p2-score-val').innerText = p2Score;
+            document.getElementById('ctrl-p2-hp').innerText = `${data.p2Hp !== undefined ? data.p2Hp : 20} / 20`;
+            document.getElementById('ctrl-p2-score-val').innerText = data.p2Score !== undefined ? data.p2Score : 0;
         });
 
-        // Function to adjust match scores directly in Firebase
+        // Function to push manual name updates to Firebase (retains dots if typed)
+        function updatePlayerName(nameKey, inputId) {
+            const nameVal = document.getElementById(inputId).value.trim();
+            dbRef.update({
+                [nameKey]: nameVal
+            }).then(() => {
+                console.log(`${nameKey} updated to: ${nameVal}`);
+            }).catch((error) => {
+                alert("Failed to update name: " + error.message);
+            });
+        }
+
+        // Function to adjust scores directly in Firebase
         function adjustScore(scoreKey, amount) {
             dbRef.once('value').then((snapshot) => {
                 const data = snapshot.val() || {};
                 let currentScore = data[scoreKey] !== undefined ? data[scoreKey] : 0;
                 let newScore = Math.max(0, currentScore + amount);
 
-                // Update Firebase
                 dbRef.update({
                     [scoreKey]: newScore
                 });

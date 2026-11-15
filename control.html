@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Controller Champs - Admin Control Panel</title>
+    <title>Controller Champs</title>
     <!-- Firebase App (Core SDK) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <!-- Firebase Realtime Database -->
@@ -156,7 +156,7 @@
 <body>
 
     <div class="admin-container">
-        <h1>Controller Champs Admin</h1>
+        <h1>Controller Champs</h1>
         <div class="match-card">
             
             <!-- Player 1 Control -->
@@ -164,15 +164,15 @@
                 <div class="player-title">Player 1 Control</div>
                 <div class="stat-box" style="margin-bottom: 8px;">
                     <label>Player Name (Supports . prefix for Bedrock)</label>
-                    <input type="text" id="p1-name-input" placeholder="e.g. .Redgoesbrr">
+                    <input type="text" id="p1-name-input" placeholder="e.g. Steve">
                 </div>
                 <div class="stats-grid">
                     <div class="stat-box">
-                        <label>Live HP Readout</label>
+                        <label>HP</label>
                         <div id="ctrl-p1-hp" class="value-display">20 / 20</div>
                     </div>
                     <div class="stat-box">
-                        <label>Score Control (<span id="ctrl-p1-score-val" style="color: #ffaa00;">0</span>)</label>
+                        <label>Score (<span id="ctrl-p1-score-val" style="color: #ffaa00;">0</span>)</label>
                         <div class="score-controls">
                             <button class="decrement" onclick="adjustScore('p1Score', -1)">-</button>
                             <button onclick="adjustScore('p1Score', 1)">+</button>
@@ -189,15 +189,15 @@
                 <div class="player-title">Player 2 Control</div>
                 <div class="stat-box" style="margin-bottom: 8px;">
                     <label>Player Name (Supports . prefix for Bedrock)</label>
-                    <input type="text" id="p2-name-input" placeholder="e.g. Steve">
+                    <input type="text" id="p2-name-input" placeholder="e.g. Alex">
                 </div>
                 <div class="stats-grid">
                     <div class="stat-box">
-                        <label>Live HP Readout</label>
+                        <label>HP</label>
                         <div id="ctrl-p2-hp" class="value-display">20 / 20</div>
                     </div>
                     <div class="stat-box">
-                        <label>Score Control (<span id="ctrl-p2-score-val" style="color: #ffaa00;">0</span>)</label>
+                        <label>Score (<span id="ctrl-p2-score-val" style="color: #ffaa00;">0</span>)</label>
                         <div class="score-controls">
                             <button class="decrement" onclick="adjustScore('p2Score', -1)">-</button>
                             <button onclick="adjustScore('p2Score', 1)">+</button>

@@ -105,37 +105,27 @@
             document.getElementById('gamemode-display').innerText = data.gamemode || 'DIAMOND POT';
         }
 
-        function checkUpdates() {
-            // 1. Check URL parameters if passed
-            const params = new URLSearchParams(window.location.search);
-            if (params.has('p1')) {
-                applyState({
-                    p1Name: params.get('p1'),
-                    p1Hp: params.get('p1hp'),
-                    p1Score: params.get('p1s'),
-                    p2Name: params.get('p2'),
-                    p2Hp: params.get('p2hp'),
-                    p2Score: params.get('p2s'),
-                    gamemode: params.get('gm')
-                });
-                return;
+        function readState() {
+            // 1. Check URL hash (instant cross-engine sync)
+            if (window.location.hash.startsWith('#data=')) {
+                try {
+                    const jsonStr = decodeURIComponent(window.location.hash.substring(6));
+                    const parsed = JSON.parse(jsonStr);
+                    applyState(parsed);
+                    return;
+                } catch (e) {}
             }
-            // 2. Check shared localStorage (works when opened in OBS Dock + OBS Source)
+            // 2. Fallback to localStorage
             try {
                 const raw = localStorage.getItem('pvp_hud_state');
                 if (raw) applyState(JSON.parse(raw));
             } catch (e) {}
         }
 
-        // 3. Listen for instant BroadcastChannel updates
-        try {
-            const channel = new BroadcastChannel('pvp_hud_channel');
-            channel.onmessage = (event) => applyState(event.data);
-        } catch (e) {}
-
-        window.addEventListener('storage', checkUpdates);
-        setInterval(checkUpdates, 150);
-        checkUpdates();
+        window.addEventListener('hashchange', readState);
+        window.addEventListener('storage', readState);
+        setInterval(readState, 100);
+        readState();
     </script>
 </body>
 </html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PvP HUD Controller</title>
+    <style>
+        body { background: #141419; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 14px; margin: 0; }
+        .panel { background: #1c1c24; border: 1px solid #333; padding: 16px; border-radius: 8px; max-width: 440px; margin: auto; }
+        h2 { color: #d4af37; margin: 0 0 12px 0; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
+        .group { margin-bottom: 12px; }
+        label { display: block; font-size: 11px; color: #aaa; margin-bottom: 4px; text-transform: uppercase; font-weight: bold; }
+        input { width: 100%; padding: 7px 10px; background: #262630; border: 1px solid #444; color: #fff; border-radius: 4px; box-sizing: border-box; font-size: 13px; }
+        input:focus { outline: none; border-color: #d4af37; }
+        .row { display: flex; gap: 8px; }
+        .row > div { flex: 1; }
+        .hp-btns { display: flex; gap: 4px; margin-top: 5px; }
+        .hp-btns button { background: #2d2d3a; color: #fff; padding: 5px; font-size: 11px; border: 1px solid #444; }
+        .hp-btns button:hover { background: #3e3e4f; }
+        button { background: #d4af37; color: #111; border: none; padding: 9px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 6px; font-size: 12px; text-transform: uppercase; }
+        button:hover { background: #e8c34a; }
+        .secondary { background: #2c2c38; color: #ddd; border: 1px solid #444; }
+        .secondary:hover { background: #383847; }
+        .status { font-size: 11px; color: #55ff55; text-align: center; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <h2>PvP Stream Controller</h2>
+        
+        <div class="group">
+            <label>Gamemode / Kit</label>
+            <input type="text" id="gamemode" value="DIAMOND POT" oninput="save()">
+        </div>
+
+        <div class="row">
+            <div class="group">
+                <label>Player 1 IGN</label>
+                <input type="text" id="p1Name" value="Mikagoated" oninput="save()">
+            </div>
+            <div class="group" style="max-width: 90px;">
+                <label>P1 Score</label>
+                <input type="number" id="p1Score" value="0" oninput="save()">
+            </div>
+        </div>
+        <div class="group">
+            <label>Player 1 HP (0 - 20)</label>
+            <input type="number" step="0.5" min="0" max="20" id="p1Hp" value="20" oninput="save()">
+            <div class="hp-btns">
+                <button type="button" onclick="adjHp('p1Hp', -2)">-1 ❤</button>
+                <button type="button" onclick="adjHp('p1Hp', -1)">-0.5 ❤</button>
+                <button type="button" onclick="adjHp('p1Hp', 1)">+0.5 ❤</button>
+                <button type="button" onclick="adjHp('p1Hp', 2)">+1 ❤</button>
+                <button type="button" onclick="setHp('p1Hp', 20)">Full</button>
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #333; margin: 14px 0;">
+
+        <div class="row">
+            <div class="group">
+                <label>Player 2 IGN</label>
+                <input type="text" id="p2Name" value="Freekee_Fang" oninput="save()">
+            </div>
+            <div class="group" style="max-width: 90px;">
+                <label>P2 Score</label>
+                <input type="number" id="p2Score" value="0" oninput="save()">
+            </div>
+        </div>
+        <div class="group">
+            <label>Player 2 HP (0 - 20)</label>
+            <input type="number" step="0.5" min="0" max="20" id="p2Hp" value="20" oninput="save()">
+            <div class="hp-btns">
+                <button type="button" onclick="adjHp('p2Hp', -2)">-1 ❤</button>
+                <button type="button" onclick="adjHp('p2Hp', -1)">-0.5 ❤</button>
+                <button type="button" onclick="adjHp('p2Hp', 1)">+0.5 ❤</button>
+                <button type="button" onclick="adjHp('p2Hp', 2)">+1 ❤</button>
+                <button type="button" onclick="setHp('p2Hp', 20)">Full</button>
+            </div>
+        </div>
+
+        <button type="button" onclick="resetMatch()">Reset Scores & Full Heal</button>
+        <div class="status" id="status">Synced & Ready</div>
+    </div>
+
+    <script>
+        let channel;
+        try { channel = new BroadcastChannel('pvp_hud_channel'); } catch (e) {}
+
+        function save() {
+            const data = {
+                p1Name: document.getElementById('p1Name').value,
+                p1Score: document.getElementById('p1Score').value,
+                p1Hp: parseFloat(document.getElementById('p1Hp').value) || 0,
+                p2Name: document.getElementById('p2Name').value,
+                p2Score: document.getElementById('p2Score').value,
+                p2Hp: parseFloat(document.getElementById('p2Hp').value) || 0,
+                gamemode: document.getElementById('gamemode').value
+            };
+            try { localStorage.setItem('pvp_hud_state', JSON.stringify(data)); } catch (e) {}
+            if (channel) channel.postMessage(data);
+        }
+
+        function adjHp(id, delta) {
+            const el = document.getElementById(id);
+            const next = Math.max(0, Math.min(20, (parseFloat(el.value) || 0) + delta));
+            el.value = next;
+            save();
+        }
+
+        function setHp(id, val) {
+            document.getElementById(id).value = val;
+            save();
+        }
+
+        function resetMatch() {
+            document.getElementById('p1Score').value = 0;
+            document.getElementById('p2Score').value = 0;
+            document.getElementById('p1Hp').value = 20;
+            document.getElementById('p2Hp').value = 20;
+            save();
+        }
+
+        window.onload = function() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('pvp_hud_state') || '{}');
+                if (saved.p1Name) document.getElementById('p1Name').value = saved.p1Name;
+                if (saved.p1Score !== undefined) document.getElementById('p1Score').value = saved.p1Score;
+                if (saved.p1Hp !== undefined) document.getElementById('p1Hp').value = saved.p1Hp;
+                if (saved.p2Name) document.getElementById('p2Name').value = saved.p2Name;
+                if (saved.p2Score !== undefined) document.getElementById('p2Score').value = saved.p2Score;
+                if (saved.p2Hp !== undefined) document.getElementById('p2Hp').value = saved.p2Hp;
+                if (saved.gamemode) document.getElementById('gamemode').value = saved.gamemode;
+            } catch (e) {}
+            save();
+        };
+    </script>
+</body>
+</html>

@@ -19,25 +19,23 @@
             background: transparent; /* Perfect for OBS transparent browser source */
             color: #ffffff;
             padding: 30px;
+            display: flex;
+            justify-content: center;
         }
 
         .hud-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            width: 700px;
-            background: rgba(15, 15, 20, 0.85);
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            padding: 16px 24px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(8px);
+            width: 740px;
+            background: transparent; /* No background wrapper */
+            padding: 10px 20px;
         }
 
         .player-side {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
             width: 42%;
         }
 
@@ -48,13 +46,14 @@
 
         .head-wrapper {
             position: relative;
-            width: 60px;
-            height: 60px;
+            width: 55px;
+            height: 55px;
             background: rgba(0, 0, 0, 0.4);
-            border-radius: 8px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
             overflow: hidden;
             flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
 
         .head-wrapper img {
@@ -67,56 +66,60 @@
         .player-info {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
             width: 100%;
             overflow: hidden;
         }
 
-        .name-score {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .player-name {
             font-weight: 700;
             font-size: 18px;
             letter-spacing: 0.5px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+            color: #ffffff;
         }
 
-        .player-side.p2 .name-score {
+        /* Minecraft Hearts Row */
+        .hearts-container {
+            display: flex;
+            gap: 2px;
+            height: 14px;
+        }
+
+        .player-side.p2 .hearts-container {
             flex-direction: row-reverse;
         }
 
-        .score {
-            background: #ffaa00;
-            color: #111;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 14px;
+        .heart {
+            width: 12px;
+            height: 12px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><path fill="%23cc0000" d="M1 0h2v1h1v1h1V1h1V0h2v1h1v2H7v1H6v1H5v1H4V5H3V3H1V1H0V0h1z"/><path fill="%23ff3333" d="M1 1h2v1h1v1H3V1H1z"/><path fill="%23ff9999" d="M1 1h1v1H1z"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
         }
 
-        .hp-bar-bg {
-            width: 100%;
-            height: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .heart.empty {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><path fill="%23330000" d="M1 0h2v1h1v1h1V1h1V0h2v1h1v2H7v1H6v1H5v1H4V5H3V3H1V1H0V0h1z"/><path fill="%23551111" d="M1 1h2v1h1v1H3V1H1z"/></svg>');
         }
 
-        .hp-bar-fill {
-            height: 100%;
-            width: 100%;
-            background: linear-gradient(90deg, #ff3333, #ff6666);
-            transition: width 0.2s ease-in-out;
-            border-radius: 4px;
-        }
-
-        .vs-badge {
-            font-size: 20px;
+        /* Center Score (0 - 0 style with no background) */
+        .center-score {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 28px;
             font-weight: 900;
             color: #ffaa00;
-            text-shadow: 0 0 10px rgba(255, 170, 0, 0.5);
-            letter-spacing: 1px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 15px rgba(255, 170, 0, 0.4);
+            letter-spacing: 2px;
+            padding: 0 10px;
+            flex-shrink: 0;
+        }
+
+        .score-dash {
+            color: #ffffff;
+            opacity: 0.7;
         }
     </style>
 </head>
@@ -129,17 +132,19 @@
                 <img id="p1-head" src="https://api.mcheads.org/head/Steve/64" alt="P1 Head">
             </div>
             <div class="player-info">
-                <div class="name-score">
-                    <span id="p1-name">Player 1</span>
-                    <span id="p1-score" class="score">0</span>
-                </div>
-                <div class="hp-bar-bg">
-                    <div id="p1-hp" class="hp-bar-fill" style="width: 100%;"></div>
+                <div id="p1-name" class="player-name">Player 1</div>
+                <div id="p1-hearts" class="hearts-container">
+                    <!-- Dynamic Hearts -->
                 </div>
             </div>
         </div>
 
-        <div class="vs-badge">VS</div>
+        <!-- Center Score Display -->
+        <div class="center-score">
+            <span id="p1-score">0</span>
+            <span class="score-dash">-</span>
+            <span id="p2-score">0</span>
+        </div>
 
         <!-- Player 2 -->
         <div class="player-side p2">
@@ -147,12 +152,9 @@
                 <img id="p2-head" src="https://api.mcheads.org/head/Alex/64" alt="P2 Head">
             </div>
             <div class="player-info">
-                <div class="name-score">
-                    <span id="p2-name">Player 2</span>
-                    <span id="p2-score" class="score">0</span>
-                </div>
-                <div class="hp-bar-bg">
-                    <div id="p2-hp" class="hp-bar-fill" style="width: 100%;"></div>
+                <div id="p2-name" class="player-name">Player 2</div>
+                <div id="p2-hearts" class="hearts-container">
+                    <!-- Dynamic Hearts -->
                 </div>
             </div>
         </div>
@@ -173,6 +175,27 @@
             return name.startsWith('.') ? name.slice(1) : name;
         }
 
+        // Function to render Minecraft heart elements based on 0-20 HP scale
+        function renderHearts(containerId, hp) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            // Clamp HP between 0 and 20
+            const currentHp = Math.max(0, Math.min(20, hp));
+            const fullHearts = Math.floor(currentHp / 2);
+            const hasHalfHeart = (currentHp % 2) !== 0;
+            const totalSlots = 10; // Standard 10 hearts
+
+            for (let i = 0; i < totalSlots; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                if (i >= fullHearts && !(i === fullHearts && hasHalfHeart)) {
+                    heart.classList.add('empty');
+                }
+                container.appendChild(heart);
+            }
+        }
+
         // Listen for real-time updates from Firebase
         dbRef.on('value', (snapshot) => {
             const data = snapshot.val();
@@ -186,10 +209,8 @@
 
             document.getElementById('p1-name').innerText = cleanP1;
             document.getElementById('p1-score').innerText = p1Score;
-            
-            // Uses rawP1 (retaining the dot) so mcheads successfully fetches the Bedrock skin
             document.getElementById('p1-head').src = `https://api.mcheads.org/head/${encodeURIComponent(rawP1)}/64`;
-            document.getElementById('p1-hp').style.width = `${Math.max(0, Math.min(100, (p1Hp / 20) * 100))}%`;
+            renderHearts('p1-hearts', p1Hp);
 
             // --- Player 2 Data ---
             const rawP2 = data.p2Name || "Waiting...";
@@ -199,10 +220,8 @@
 
             document.getElementById('p2-name').innerText = cleanP2;
             document.getElementById('p2-score').innerText = p2Score;
-            
-            // Uses rawP2 (retaining the dot) for the skin lookup
             document.getElementById('p2-head').src = `https://api.mcheads.org/head/${encodeURIComponent(rawP2)}/64`;
-            document.getElementById('p2-hp').style.width = `${Math.max(0, Math.min(100, (p2Hp / 20) * 100))}%`;
+            renderHearts('p2-hearts', p2Hp);
         });
     </script>
 </body>

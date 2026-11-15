@@ -2,128 +2,203 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Controller Champs Stream HUD</title>
+    <!-- Firebase App (Core SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <!-- Firebase Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <style>
-        body { background: transparent; margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .hud-container { display: flex; justify-content: center; align-items: flex-start; padding-top: 18px; width: 100vw; box-sizing: border-box; }
-        .hud-bar { display: flex; align-items: center; background: linear-gradient(180deg, rgba(24,24,30,0.94) 0%, rgba(14,14,18,0.96) 100%); border: 2px solid #d4af37; border-radius: 6px; padding: 8px 18px; gap: 22px; box-shadow: 0 8px 25px rgba(0,0,0,0.85); }
-        .player-side { display: flex; align-items: center; gap: 12px; min-width: 240px; }
-        .player-side.right { flex-direction: row-reverse; }
-        .avatar { width: 42px; height: 42px; image-rendering: pixelated; border-radius: 4px; border: 1px solid #d4af37; background: #111; }
-        .info { display: flex; flex-direction: column; gap: 3px; }
-        .name { color: #fff; font-weight: 800; font-size: 16px; letter-spacing: 0.5px; text-transform: uppercase; text-shadow: 1px 1px 2px #000; }
-        .hearts { display: flex; gap: 2px; align-items: center; }
-        .heart { width: 12px; height: 12px; background: #2b2b33; display: inline-block; clip-path: polygon(50% 15%, 80% 0%, 100% 25%, 100% 55%, 50% 100%, 0% 55%, 0% 25%, 20% 0%); }
-        .heart.full { background: #ff2a2a; }
-        .heart.half { background: linear-gradient(90deg, #ff2a2a 50%, #2b2b33 50%); }
-        .hp-text { color: #ccc; font-size: 11px; font-weight: bold; margin-left: 5px; }
-        .center-hub { display: flex; flex-direction: column; align-items: center; padding: 0 18px; border-left: 1px solid rgba(212,175,55,0.3); border-right: 1px solid rgba(212,175,55,0.3); }
-        .gamemode-badge { background: linear-gradient(90deg, #b38f3e, #e5c158); color: #111; font-size: 11px; font-weight: 900; padding: 2px 10px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
-        .scores { display: flex; align-items: center; gap: 10px; }
-        .diamond-icon { width: 12px; height: 12px; background: #d4af37; transform: rotate(45deg); border: 1px solid #fff3c4; }
-        .score-num { color: #fff; font-weight: 900; font-size: 20px; text-shadow: 0 2px 4px #000; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: transparent; /* Perfect for OBS transparent browser source */
+            color: #ffffff;
+            padding: 30px;
+        }
+
+        .hud-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 700px;
+            background: rgba(15, 15, 20, 0.85);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 16px 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+        }
+
+        .player-side {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 42%;
+        }
+
+        .player-side.p2 {
+            flex-direction: row-reverse;
+            text-align: right;
+        }
+
+        .head-wrapper {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .head-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            image-rendering: pixelated;
+        }
+
+        .player-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .name-score {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .player-side.p2 .name-score {
+            flex-direction: row-reverse;
+        }
+
+        .score {
+            background: #ffaa00;
+            color: #111;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .hp-bar-bg {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hp-bar-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #ff3333, #ff6666);
+            transition: width 0.2s ease-in-out;
+            border-radius: 4px;
+        }
+
+        .vs-badge {
+            font-size: 20px;
+            font-weight: 900;
+            color: #ffaa00;
+            text-shadow: 0 0 10px rgba(255, 170, 0, 0.5);
+            letter-spacing: 1px;
+        }
     </style>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body>
+
     <div class="hud-container">
-        <div class="hud-bar">
-            <!-- Player 1 -->
-            <div class="player-side">
-                <img id="p1-avatar" class="avatar" src="https://api.mcheads.org/head/Steve/64" alt="P1">
-                <div class="info">
-                    <span id="p1-name" class="name">PLAYER 1</span>
-                    <div id="p1-hearts" class="hearts"></div>
+        <!-- Player 1 -->
+        <div class="player-side p1">
+            <div class="head-wrapper">
+                <img id="p1-head" src="https://api.mcheads.org/head/Steve/64" alt="P1 Head">
+            </div>
+            <div class="player-info">
+                <div class="name-score">
+                    <span id="p1-name">Player 1</span>
+                    <span id="p1-score" class="score">0</span>
+                </div>
+                <div class="hp-bar-bg">
+                    <div id="p1-hp" class="hp-bar-fill" style="width: 100%;"></div>
                 </div>
             </div>
+        </div>
 
-            <!-- Center Hub -->
-            <div class="center-hub">
-                <div id="gamemode-display" class="gamemode-badge">DIAMOND POT</div>
-                <div class="scores">
-                    <div class="diamond-icon"></div>
-                    <span id="p1-score" class="score-num">0</span>
-                    <span style="color: #888; font-weight: bold;">-</span>
-                    <span id="p2-score" class="score-num">0</span>
-                    <div class="diamond-icon"></div>
-                </div>
+        <div class="vs-badge">VS</div>
+
+        <!-- Player 2 -->
+        <div class="player-side p2">
+            <div class="head-wrapper">
+                <img id="p2-head" src="https://api.mcheads.org/head/Alex/64" alt="P2 Head">
             </div>
-
-            <!-- Player 2 -->
-            <div class="player-side right">
-                <img id="p2-avatar" class="avatar" src="https://api.mcheads.org/head/Alex/64" alt="P2">
-                <div class="info" style="align-items: flex-end;">
-                    <span id="p2-name" class="name" style="text-align: right;">PLAYER 2</span>
-                    <div id="p2-hearts" class="hearts"></div>
+            <div class="player-info">
+                <div class="name-score">
+                    <span id="p2-name">Player 2</span>
+                    <span id="p2-score" class="score">0</span>
+                </div>
+                <div class="hp-bar-bg">
+                    <div id="p2-hp" class="hp-bar-fill" style="width: 100%;"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Firebase Configuration for champs-6c8c8
         const firebaseConfig = {
-            apiKey: "AIzaSyAzWtIdrZ6Bq0YrCwODUg4HLh0wOdqN0eM",
-            authDomain: "champs-6c8c8.firebaseapp.com",
-            databaseURL: "https://champs-6c8c8-default-rtdb.firebaseio.com",
-            projectId: "champs-6c8c8",
-            storageBucket: "champs-6c8c8.firebasestorage.app",
-            messagingSenderId: "576944663680",
-            appId: "1:576944663680:web:ab03f20eddb32ce61fca65",
-            measurementId: "G-MWNKKPTNF5"
+            databaseURL: "https://champs-6c8c8-default-rtdb.firebaseio.com/"
         };
 
         firebase.initializeApp(firebaseConfig);
         const dbRef = firebase.database().ref('matchState');
 
-        let lastP1 = '', lastP2 = '';
-
-        function renderHearts(containerId, hp) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            const safeHp = Math.max(0, Math.min(20, Number(hp) || 0));
-            for (let i = 1; i <= 10; i++) {
-                const heart = document.createElement('div');
-                heart.className = 'heart';
-                if (safeHp >= i * 2) {
-                    heart.classList.add('full');
-                } else if (safeHp >= (i * 2) - 1) {
-                    heart.classList.add('half');
-                }
-                container.appendChild(heart);
-            }
-            const label = document.createElement('span');
-            label.className = 'hp-text';
-            label.innerText = `${safeHp.toFixed(1)} HP`;
-            container.appendChild(label);
+        // Helper to strip Geyser/Floodgate dot prefixes (e.g. ".Redgoesbrr" -> "Redgoesbrr")
+        function sanitizePlayerName(name) {
+            if (!name) return "Waiting...";
+            return name.startsWith('.') ? name.slice(1) : name;
         }
 
-        function applyState(data) {
-            if (!data) return;
-            const p1 = (data.p1Name || 'Steve').trim();
-            const p2 = (data.p2Name || 'Alex').trim();
-
-            document.getElementById('p1-name').innerText = p1;
-            if (p1 !== lastP1) {
-                document.getElementById('p1-avatar').src = `https://api.mcheads.org/head/${encodeURIComponent(p1)}/64`;
-                lastP1 = p1;
-            }
-            renderHearts('p1-hearts', data.p1Hp !== undefined ? data.p1Hp : 20);
-
-            document.getElementById('p2-name').innerText = p2;
-            if (p2 !== lastP2) {
-                document.getElementById('p2-avatar').src = `https://api.mcheads.org/head/${encodeURIComponent(p2)}/64`;
-                lastP2 = p2;
-            }
-            renderHearts('p2-hearts', data.p2Hp !== undefined ? data.p2Hp : 20);
-
-            document.getElementById('p1-score').innerText = data.p1Score ?? 0;
-            document.getElementById('p2-score').innerText = data.p2Score ?? 0;
-            document.getElementById('gamemode-display').innerText = data.gamemode || 'Gamemode';
-        }
-
+        // Listen for real-time updates from Firebase
         dbRef.on('value', (snapshot) => {
-            applyState(snapshot.val());
+            const data = snapshot.val();
+            if (!data) return;
+
+            // --- Player 1 Data ---
+            const rawP1 = data.p1Name || "Waiting...";
+            const cleanP1 = sanitizePlayerName(rawP1);
+            const p1Hp = data.p1Hp !== undefined ? data.p1Hp : 20;
+            const p1Score = data.p1Score !== undefined ? data.p1Score : 0;
+
+            document.getElementById('p1-name').innerText = cleanP1;
+            document.getElementById('p1-score').innerText = p1Score;
+            document.getElementById('p1-head').src = `https://api.mcheads.org/head/${encodeURIComponent(cleanP1)}/64`;
+            document.getElementById('p1-hp').style.width = `${Math.max(0, Math.min(100, (p1Hp / 20) * 100))}%`;
+
+            // --- Player 2 Data ---
+            const rawP2 = data.p2Name || "Waiting...";
+            const cleanP2 = sanitizePlayerName(rawP2);
+            const p2Hp = data.p2Hp !== undefined ? data.p2Hp : 20;
+            const p2Score = data.p2Score !== undefined ? data.p2Score : 0;
+
+            document.getElementById('p2-name').innerText = cleanP2;
+            document.getElementById('p2-score').innerText = p2Score;
+            document.getElementById('p2-head').src = `https://api.mcheads.org/head/${encodeURIComponent(cleanP2)}/64`;
+            document.getElementById('p2-hp').style.width = `${Math.max(0, Math.min(100, (p2Hp / 20) * 100))}%`;
         });
     </script>
 </body>

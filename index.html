@@ -31,7 +31,7 @@
         <div class="hud-bar">
             <!-- Player 1 -->
             <div class="player-side">
-                <img id="p1-avatar" class="avatar" src="https://mc-heads.net/avatar/Steve/64" alt="P1">
+                <img id="p1-avatar" class="avatar" src="https://api.mcheads.org/head/Steve/64" alt="P1">
                 <div class="info">
                     <span id="p1-name" class="name">PLAYER 1</span>
                     <div id="p1-hearts" class="hearts"></div>
@@ -52,7 +52,7 @@
 
             <!-- Player 2 -->
             <div class="player-side right">
-                <img id="p2-avatar" class="avatar" src="https://mc-heads.net/avatar/Alex/64" alt="P2">
+                <img id="p2-avatar" class="avatar" src="https://api.mcheads.org/head/Alex/64" alt="P2">
                 <div class="info" style="align-items: flex-end;">
                     <span id="p2-name" class="name" style="text-align: right;">PLAYER 2</span>
                     <div id="p2-hearts" class="hearts"></div>
@@ -105,21 +105,21 @@
 
             document.getElementById('p1-name').innerText = p1;
             if (p1 !== lastP1) {
-                document.getElementById('p1-avatar').src = `https://mc-heads.net/avatar/${encodeURIComponent(p1)}/64`;
+                document.getElementById('p1-avatar').src = `https://api.mcheads.org/head/${encodeURIComponent(p1)}/64`;
                 lastP1 = p1;
             }
             renderHearts('p1-hearts', data.p1Hp !== undefined ? data.p1Hp : 20);
 
             document.getElementById('p2-name').innerText = p2;
             if (p2 !== lastP2) {
-                document.getElementById('p2-avatar').src = `https://mc-heads.net/avatar/${encodeURIComponent(p2)}/64`;
+                document.getElementById('p2-avatar').src = `https://api.mcheads.org/head/${encodeURIComponent(p2)}/64`;
                 lastP2 = p2;
             }
             renderHearts('p2-hearts', data.p2Hp !== undefined ? data.p2Hp : 20);
 
             document.getElementById('p1-score').innerText = data.p1Score ?? 0;
             document.getElementById('p2-score').innerText = data.p2Score ?? 0;
-            document.getElementById('gamemode-display').innerText = data.gamemode || 'DIAMOND POT';
+            document.getElementById('gamemode-display').innerText = data.gamemode || 'Gamemode';
         }
 
         dbRef.on('value', (snapshot) => {

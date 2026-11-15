@@ -14,14 +14,15 @@
         .row { display: flex; gap: 8px; }
         .row > div { flex: 1; }
         .hp-btns { display: flex; gap: 4px; margin-top: 5px; }
-        .hp-btns button { background: #2d2d3a; color: #fff; padding: 5px; font-size: 11px; border: 1px solid #444; }
+        .hp-btns button { background: #2d2d3a; color: #fff; padding: 5px; font-size: 11px; border: 1px solid #444; cursor: pointer; }
         .hp-btns button:hover { background: #3e3e4f; }
         button { background: #d4af37; color: #111; border: none; padding: 9px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 6px; font-size: 12px; text-transform: uppercase; }
         button:hover { background: #e8c34a; }
-        .secondary { background: #2c2c38; color: #ddd; border: 1px solid #444; }
-        .secondary:hover { background: #383847; }
         .status { font-size: 11px; color: #55ff55; text-align: center; margin-top: 8px; }
     </style>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body>
     <div class="panel">
@@ -79,12 +80,28 @@
         </div>
 
         <button type="button" onclick="resetMatch()">Reset Scores & Full Heal</button>
-        <button type="button" class="secondary" onclick="copyObsLink()">📋 Copy OBS Link with Current State</button>
-        <div class="status" id="status">Active & Syncing</div>
+        <div class="status" id="status">Firebase Connected</div>
     </div>
 
     <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzWtIdrZ6Bq0YrCwODUg4HLh0wOdqN0eM",
+            authDomain: "champs-6c8c8.firebaseapp.com",
+            databaseURL: "https://champs-6c8c8-default-rtdb.firebaseio.com",
+            projectId: "champs-6c8c8",
+            storageBucket: "champs-6c8c8.firebasestorage.app",
+            messagingSenderId: "576944663680",
+            appId: "1:576944663680:web:ab03f20eddb32ce61fca65",
+            measurementId: "G-MWNKKPTNF5"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const dbRef = firebase.database().ref('matchState');
+
+        let isInitialized = false;
+
         function save() {
+            if (!isInitialized) return;
             const data = {
                 p1Name: document.getElementById('p1Name').value,
                 p1Score: document.getElementById('p1Score').value,
@@ -94,16 +111,7 @@
                 p2Hp: parseFloat(document.getElementById('p2Hp').value) || 0,
                 gamemode: document.getElementById('gamemode').value
             };
-            
-            const jsonStr = JSON.stringify(data);
-            try { localStorage.setItem('pvp_hud_state', jsonStr); } catch (e) {}
-            
-            // If hosted on GitHub Pages or local web server, update history state so any iframe/opener linked to it updates
-            if (window.opener && !window.opener.closed) {
-                try {
-                    window.opener.location.hash = 'data=' + encodeURIComponent(jsonStr);
-                } catch (e) {}
-            }
+            dbRef.set(data);
         }
 
         function adjHp(id, delta) {
@@ -114,7 +122,6 @@
         }
 
         function setHp(id, val) {
-            document.getElementById('p1Hp' === id ? 'p1Hp' : id).value = val; // handles correct element
             document.getElementById(id).value = val;
             save();
         }
@@ -127,28 +134,9 @@
             save();
         }
 
-        function copyObsLink() {
-            const data = {
-                p1Name: document.getElementById('p1Name').value,
-                p1Score: document.getElementById('p1Score').value,
-                p1Hp: parseFloat(document.getElementById('p1Hp').value) || 20,
-                p2Name: document.getElementById('p2Name').value,
-                p2Score: document.getElementById('p2Score').value,
-                p2Hp: parseFloat(document.getElementById('p2Hp').value) || 20,
-                gamemode: document.getElementById('gamemode').value
-            };
-            const base = window.location.href.replace('control.html', 'stream.html');
-            const fullLink = base + '#data=' + encodeURIComponent(JSON.stringify(data));
-            navigator.clipboard.writeText(fullLink);
-            
-            const status = document.getElementById('status');
-            status.innerText = "Copied OBS Link to Clipboard!";
-            setTimeout(() => { status.innerText = "Active & Syncing"; }, 3000);
-        }
-
-        window.onload = function() {
-            try {
-                const saved = JSON.parse(localStorage.getItem('pvp_hud_state') || '{}');
+        dbRef.once('value', (snapshot) => {
+            const saved = snapshot.val();
+            if (saved) {
                 if (saved.p1Name) document.getElementById('p1Name').value = saved.p1Name;
                 if (saved.p1Score !== undefined) document.getElementById('p1Score').value = saved.p1Score;
                 if (saved.p1Hp !== undefined) document.getElementById('p1Hp').value = saved.p1Hp;
@@ -156,9 +144,11 @@
                 if (saved.p2Score !== undefined) document.getElementById('p2Score').value = saved.p2Score;
                 if (saved.p2Hp !== undefined) document.getElementById('p2Hp').value = saved.p2Hp;
                 if (saved.gamemode) document.getElementById('gamemode').value = saved.gamemode;
-            } catch (e) {}
-            save();
-        };
+            } else {
+                save();
+            }
+            isInitialized = true;
+        });
     </script>
 </body>
 </html>

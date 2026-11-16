@@ -2,330 +2,112 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Controller Champs HUD - Stream Overlay</title>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <title>Controller Champs HUD</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
         body {
-            background: transparent;
+            background-color: #1a1a1a;
             color: #ffffff;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            padding-top: 10px;
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
         }
-
-        .hud-container {
+        .player-card {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            width: 960px;
-            background: linear-gradient(180deg, rgba(15, 15, 22, 0.9) 0%, rgba(10, 10, 15, 0.8) 100%);
-            border-bottom: 2px solid rgba(255, 170, 0, 0.4);
-            border-left: 1px solid rgba(255, 255, 255, 0.1);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 0 0 14px 14px;
-            padding: 10px 22px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(6px);
+            gap: 30px;
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 12px;
+            width: fit-content;
+            margin-bottom: 20px;
         }
-
-        .player-side {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            width: 38%;
-        }
-
-        .player-side.p2 {
-            flex-direction: row-reverse;
-            text-align: right;
-        }
-
-        .head-wrapper {
-            position: relative;
-            width: 44px;
-            height: 44px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 6px;
-            border: 2px solid rgba(255, 255, 255, 0.25);
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-
-        .head-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            image-rendering: pixelated;
-        }
-
-        .player-info {
+        .player-info-stack {
             display: flex;
             flex-direction: column;
-            gap: 3px;
-            width: 100%;
-            overflow: hidden;
+            gap: 8px;
         }
-
         .player-name {
-            font-weight: 700;
-            font-size: 15px;
-            letter-spacing: 0.5px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
-            color: #ffffff;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-size: 28px;
+            font-weight: bold;
+            margin: 0;
         }
-
-        .hearts-container {
-            display: flex;
-            gap: 2px;
-            height: 10px;
-        }
-
-        .player-side.p2 .hearts-container {
-            flex-direction: row-reverse;
-        }
-
-        .heart {
-            width: 10px;
-            height: 10px;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><path fill="%23cc0000" d="M1 0h2v1h1v1h1V1h1V0h2v1h1v2H7v1H6v1H5v1H4V5H3V3H1V1H0V0h1z"/><path fill="%23ff3333" d="M1 1h2v1h1v1H3V1H1z"/><path fill="%23ff9999" d="M1 1h1v1H1z"/></svg>');
-            background-size: contain;
-            background-repeat: no-repeat;
-        }
-
-        .heart.empty {
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><path fill="%23330000" d="M1 0h2v1h1v1h1V1h1V0h2v1h1v2H7v1H6v1H5v1H4V5H3V3H1V1H0V0h1z"/><path fill="%23551111" d="M1 1h2v1h1v1H3V1H1z"/></svg>');
-        }
-
-        /* Horizontal Armor Rack Section */
-        .armor-row {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            margin-top: 2px;
-        }
-
-        .player-side.p2 .armor-row {
-            flex-direction: row-reverse;
-        }
-
-        .armor-slot {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            padding: 2px 4px;
-            min-width: 28px;
-        }
-
-        .armor-slot img {
-            width: 16px;
-            height: 16px;
-            image-rendering: pixelated;
-        }
-
-        .armor-durability {
-            font-size: 9px;
-            font-weight: 600;
-            color: #ddd;
-            margin-top: 1px;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-        }
-
-        /* Center Score & Totem Indicators */
-        .center-hud {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            flex-shrink: 0;
-            padding: 0 10px;
-        }
-
-        .center-score {
-            font-size: 24px;
-            font-weight: 900;
-            color: #ffaa00;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 12px rgba(255, 170, 0, 0.4);
+        .hearts {
+            font-size: 20px;
             letter-spacing: 2px;
         }
-
-        .score-dash {
-            color: #ffffff;
-            opacity: 0.6;
+        .armor-container {
+            display: flex;
+            gap: 12px;
         }
-
-        .totem-badge {
-            width: 22px;
-            height: 22px;
-            background-image: url('https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/23w13a__or__b/assets/minecraft/textures/item/totem_of_undying.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            image-rendering: pixelated;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
-            opacity: 0.2; /* Dimmed when inactive */
-            transition: opacity 0.2s ease;
+        .armor-slot {
+            background: #1e1e1e;
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            min-width: 45px;
         }
-
-        .totem-badge.active {
-            opacity: 1; /* Fully lit when active */
-            filter: drop-shadow(0 0 6px rgba(255, 200, 0, 0.8));
+        .armor-slot span {
+            font-size: 14px;
+            color: #00ffcc;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-    <div class="hud-container">
-        <!-- Player 1 -->
-        <div class="player-side p1">
-            <div class="head-wrapper">
-                <img id="p1-head" src="https://api.mcheads.org/head/Steve/64" alt="P1 Head">
-            </div>
-            <div class="player-info">
-                <div id="p1-name" class="player-name">Player 1</div>
-                <div id="p1-hearts" class="hearts-container"></div>
-                <div id="p1-armor" class="armor-row"></div>
-            </div>
+    <!-- Player 1 HUD Card -->
+    <div class="player-card">
+        <!-- Left: Name & Hearts Stack -->
+        <div class="player-info-stack">
+            <h2 class="player-name" id="p1-name">Waiting...</h2>
+            <div class="hearts" id="p1-hearts">❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️</div>
         </div>
 
-        <!-- Center Score & Totems -->
-        <div class="center-hud">
-            <div id="p1-totem" class="totem-badge" title="Player 1 Totem"></div>
-            <div class="center-score">
-                <span id="p1-score">0</span>
-                <span class="score-dash">-</span>
-                <span id="p2-score">0</span>
+        <!-- Right: Armor Slots & Durability Side-by-Side -->
+        <div class="armor-container">
+            <div class="armor-slot">
+                <span id="p1-helmet-name"> Helm </span>
+                <span id="p1-helmet-dur">0</span>
             </div>
-            <div id="p2-totem" class="totem-badge" title="Player 2 Totem"></div>
-        </div>
-
-        <!-- Player 2 -->
-        <div class="player-side p2">
-            <div class="head-wrapper">
-                <img id="p2-head" src="https://api.mcheads.org/head/Alex/64" alt="P2 Head">
+            <div class="armor-slot">
+                <span id="p1-chest-name"> Chest </span>
+                <span id="p1-chest-dur">0</span>
             </div>
-            <div class="player-info">
-                <div id="p2-name" class="player-name">Player 2</div>
-                <div id="p2-hearts" class="hearts-container"></div>
-                <div id="p2-armor" class="armor-row"></div>
+            <div class="armor-slot">
+                <span id="p1-legs-name"> Legs </span>
+                <span id="p1-legs-dur">0</span>
+            </div>
+            <div class="armor-slot">
+                <span id="p1-boots-name"> Boots </span>
+                <span id="p1-boots-dur">0</span>
             </div>
         </div>
     </div>
 
+    <!-- Firebase SDK Integration Script -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script>
         const firebaseConfig = {
             databaseURL: "https://champs-6c8c8-default-rtdb.firebaseio.com/"
         };
-
         firebase.initializeApp(firebaseConfig);
+
         const dbRef = firebase.database().ref('matchState');
-
-        function sanitizePlayerName(name) {
-            if (!name) return "Waiting...";
-            return name.startsWith('.') ? name.slice(1) : name;
-        }
-
-        function renderHearts(containerId, hp) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            const currentHp = Math.max(0, Math.min(20, hp));
-            const fullHearts = Math.floor(currentHp / 2);
-            const hasHalfHeart = (currentHp % 2) !== 0;
-
-            for (let i = 0; i < 10; i++) {
-                const heart = document.createElement('div');
-                heart.className = 'heart';
-                if (i >= fullHearts && !(i === fullHearts && hasHalfHeart)) {
-                    heart.classList.add('empty');
-                }
-                container.appendChild(heart);
-            }
-        }
-
-        // Clean internal item names from Skript into valid asset filenames
-        function formatItemTextureName(rawItemString) {
-            if (!rawItemString || rawItemString.toLowerCase() === 'air' || rawItemString.includes('none')) return null;
-            let clean = rawItemString.toLowerCase().trim();
-            // Strip formatting or namespaces if present
-            clean = clean.replace(/^(minecraft:)?/, '').replace(/\s+/g, '_');
-            return clean;
-        }
-
-        function renderArmor(containerId, helmet, chest, legs, boots, hDur, cDur, lDur, bDur) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-
-            const items = [
-                { item: helmet, dur: hDur },
-                { item: chest, dur: cDur },
-                { item: legs, dur: lDur },
-                { item: boots, dur: bDur }
-            ];
-
-            items.forEach(slotData => {
-                const assetName = formatItemTextureName(slotData.item);
-                if (!assetName) return; // Skip empty slots
-
-                const slotDiv = document.createElement('div');
-                slotDiv.className = 'armor-slot';
-
-                const img = document.createElement('img');
-                // High-resolution asset URL pointing directly to InventivetalentDev repository layout
-                img.src = `https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/23w13a__or__b/assets/minecraft/textures/item/${assetName}.png`;
-                img.onerror = () => { img.style.display = 'none'; }; // Fallback gracefully if missing
-
-                const durText = document.createElement('span');
-                durText.className = 'armor-durability';
-                durText.innerText = slotData.dur !== undefined ? slotData.dur : '';
-
-                slotDiv.appendChild(img);
-                slotDiv.appendChild(durText);
-                container.appendChild(slotDiv);
-            });
-        }
-
         dbRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (!data) return;
 
-            // Player 1 Data
-            const rawP1 = data.p1Name || "Waiting...";
-            document.getElementById('p1-name').innerText = sanitizePlayerName(rawP1);
-            document.getElementById('p1-score').innerText = data.p1Score || 0;
-            document.getElementById('p1-head').src = `https://api.mcheads.org/head/${encodeURIComponent(rawP1)}/64`;
-            renderHearts('p1-hearts', data.p1Hp !== undefined ? data.p1Hp : 20);
-            renderArmor('p1-armor', data.p1Helmet, data.p1Chest, data.p1Legs, data.p1Boots, data.p1HelmetDur, data.p1ChestDur, data.p1LegsDur, data.p1BootsDur);
-            
-            const p1TotemElem = document.getElementById('p1-totem');
-            if (data.p1Totem === true) { p1TotemElem.classList.add('active'); } 
-            else { p1TotemElem.classList.remove('active'); }
-
-            // Player 2 Data
-            const rawP2 = data.p2Name || "Waiting...";
-            document.getElementById('p2-name').innerText = sanitizePlayerName(rawP2);
-            document.getElementById('p2-score').innerText = data.p2Score || 0;
-            document.getElementById('p2-head').src = `https://api.mcheads.org/head/${encodeURIComponent(rawP2)}/64`;
-            renderHearts('p2-hearts', data.p2Hp !== undefined ? data.p2Hp : 20);
-            renderArmor('p2-armor', data.p2Helmet, data.p2Chest, data.p2Legs, data.p2Boots, data.p2HelmetDur, data.p2ChestDur, data.p2LegsDur, data.p2BootsDur);
-
-            const p2TotemElem = document.getElementById('p2-totem');
-            if (data.p2Totem === true) { p2TotemElem.classList.add('active'); } 
-            else { p2TotemElem.classList.remove('active'); }
+            // Update Player 1 Info
+            document.getElementById('p1-name').innerText = data.p1Name || "Player 1";
+            document.getElementById('p1-helmet-dur').innerText = data.p1HelmetDur || 0;
+            document.getElementById('p1-chest-dur').innerText = data.p1ChestDur || 0;
+            document.getElementById('p1-legs-dur').innerText = data.p1LegsDur || 0;
+            document.getElementById('p1-boots-dur').innerText = data.p1BootsDur || 0;
         });
     </script>
 </body>

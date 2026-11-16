@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Controller Champs Scoreboard HUD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: transparent;
+            font-family: 'Inter', sans-serif;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            padding-top: 20px;
+            overflow: hidden;
+        }
+
+        /* Main Outer Gold-Bordered Pill Container */
+        .hud-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(180deg, rgba(24, 28, 38, 0.95) 0%, rgba(15, 18, 26, 0.98) 100%);
+            border: 3px solid #f5b942;
+            border-radius: 14px;
+            padding: 10px 18px;
+            width: 1220px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.65), inset 0 0 12px rgba(245, 185, 66, 0.15);
+        }
+
+        /* Player Sections */
+        .player-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        .player-section.p1 {
+            justify-content: flex-start;
+        }
+        .player-section.p2 {
+            justify-content: flex-end;
+        }
+
+        /* Gold-Framed Avatar */
+        .avatar-box {
+            width: 54px;
+            height: 54px;
+            border: 2.5px solid #f5b942;
+            border-radius: 8px;
+            background: #111;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .avatar-box img {
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+        }
+
+        /* Name & Health Column */
+        .stats-col {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .p1 .stats-col {
+            align-items: flex-start;
+        }
+        .p2 .stats-col {
+            align-items: flex-end;
+        }
+
+        .player-name {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.8);
+        }
+
+        .health-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .p2 .health-row {
+            flex-direction: row-reverse;
+        }
+        .hearts {
+            font-size: 13px;
+            letter-spacing: 1px;
+            filter: drop-shadow(1px 1px 0px #000);
+            white-space: nowrap;
+        }
+        .hp-text {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: #d0d7e5;
+            text-shadow: 1px 1px 0px #000;
+        }
+
+        /* Armor Strip Next to Score */
+        .armor-strip {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .p1 .armor-strip {
+            margin-left: 12px;
+        }
+        .p2 .armor-strip {
+            margin-right: 12px;
+        }
+        .armor-slot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10, 12, 18, 0.75);
+            border: 1px solid rgba(245, 185, 66, 0.35);
+            border-radius: 6px;
+            width: 34px;
+            height: 44px;
+            padding: 2px;
+        }
+        .armor-slot img {
+            width: 20px;
+            height: 20px;
+            image-rendering: pixelated;
+            object-fit: contain;
+        }
+        .armor-slot img[src=""] {
+            display: none;
+        }
+        .dur-text {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1;
+            margin-top: 3px;
+            text-shadow: 1px 1px 0px #000;
+        }
+
+        /* Vertical Gold Dividers */
+        .divider {
+            width: 2px;
+            height: 52px;
+            background: linear-gradient(180deg, rgba(245, 185, 66, 0.2), #f5b942, rgba(245, 185, 66, 0.2));
+            margin: 0 14px;
+            flex-shrink: 0;
+        }
+
+        /* Center Scoreboard Block */
+        .center-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            min-width: 140px;
+        }
+        .gamemode-badge {
+            background: #f5b942;
+            color: #141720;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+        }
+        .score-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .totem-icon {
+            width: 20px;
+            height: 20px;
+            image-rendering: pixelated;
+            opacity: 0.25;
+            transition: all 0.2s ease;
+        }
+        .totem-icon.active {
+            opacity: 1;
+            filter: drop-shadow(0 0 6px #f5b942);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hud-bar">
+        <!-- PLAYER 1 -->
+        <div class="player-section p1">
+            <div class="avatar-box">
+                <img id="p1-avatar" src="https://minotar.net/avatar/Steve/64.png" alt="P1">
+            </div>
+            <div class="stats-col">
+                <div class="player-name" id="p1-name">Steve</div>
+                <div class="health-row">
+                    <div class="hearts" id="p1-hearts">❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️</div>
+                    <div class="hp-text" id="p1-hp-text">20.0 HP</div>
+                </div>
+            </div>
+            <div class="armor-strip">
+                <div class="armor-slot"><img id="p1-helmet-img" src=""><span class="dur-text" id="p1-helmet-dur">-</span></div>
+                <div class="armor-slot"><img id="p1-chest-img" src=""><span class="dur-text" id="p1-chest-dur">-</span></div>
+                <div class="armor-slot"><img id="p1-legs-img" src=""><span class="dur-text" id="p1-legs-dur">-</span></div>
+                <div class="armor-slot"><img id="p1-boots-img" src=""><span class="dur-text" id="p1-boots-dur">-</span></div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- CENTER SCOREBOARD -->
+        <div class="center-block">
+            <div class="gamemode-badge" id="gamemode-label">Gamemode</div>
+            <div class="score-row">
+                <img class="totem-icon" id="p1-totem" src="https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/items/totem.png" alt="Totem">
+                <span id="p1-score">0</span>
+                <span>-</span>
+                <span id="p2-score">0</span>
+                <img class="totem-icon" id="p2-totem" src="https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/items/totem.png" alt="Totem">
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- PLAYER 2 -->
+        <div class="player-section p2">
+            <div class="armor-strip">
+                <div class="armor-slot"><img id="p2-helmet-img" src=""><span class="dur-text" id="p2-helmet-dur">-</span></div>
+                <div class="armor-slot"><img id="p2-chest-img" src=""><span class="dur-text" id="p2-chest-dur">-</span></div>
+                <div class="armor-slot"><img id="p2-legs-img" src=""><span class="dur-text" id="p2-legs-dur">-</span></div>
+                <div class="armor-slot"><img id="p2-boots-img" src=""><span class="dur-text" id="p2-boots-dur">-</span></div>
+            </div>
+            <div class="stats-col">
+                <div class="player-name" id="p2-name">Alex</div>
+                <div class="health-row">
+                    <div class="hearts" id="p2-hearts">❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️</div>
+                    <div class="hp-text" id="p2-hp-text">20.0 HP</div>
+                </div>
+            </div>
+            <div class="avatar-box">
+                <img id="p2-avatar" src="https://minotar.net/avatar/Alex/64.png" alt="P2">
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script>
+        firebase.initializeApp({
+            databaseURL: "https://champs-6c8c8-default-rtdb.firebaseio.com/"
+        });
+
+        const MAX_DURABILITY = {
+            netherite_helmet: 407, netherite_chestplate: 592, netherite_leggings: 555, netherite_boots: 481,
+            diamond_helmet: 363, diamond_chestplate: 528, diamond_leggings: 495, diamond_boots: 429,
+            iron_helmet: 165, iron_chestplate: 240, iron_leggings: 225, iron_boots: 195,
+            chainmail_helmet: 165, chainmail_chestplate: 240, chainmail_leggings: 225, chainmail_boots: 195,
+            golden_helmet: 77, golden_chestplate: 112, golden_leggings: 105, golden_boots: 91,
+            leather_helmet: 55, leather_chestplate: 80, leather_leggings: 75, leather_boots: 65,
+            turtle_helmet: 275
+        };
+
+        function cleanItemId(itemName) {
+            if (!itemName) return "";
+            return itemName.toLowerCase().trim().replace(/ /g, "_").replace(/"/g, "");
+        }
+
+        function getItemTexture(itemName) {
+            const id = cleanItemId(itemName);
+            if (!id || id === "air" || id.includes("air")) return "";
+            return `https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/items/${id}.png`;
+        }
+
+        function updateArmorPiece(imgId, durId, itemName, rawDur) {
+            const imgEl = document.getElementById(imgId);
+            const durEl = document.getElementById(durId);
+            const id = cleanItemId(itemName);
+
+            if (!id || id === "air" || id.includes("air")) {
+                imgEl.src = "";
+                durEl.innerText = "-";
+                durEl.style.color = "#666666";
+                return;
+            }
+
+            imgEl.src = getItemTexture(itemName);
+            const maxDur = MAX_DURABILITY[id] || 400;
+            const currentDur = Math.max(0, Number(rawDur) || 0);
+            durEl.innerText = currentDur;
+
+            const ratio = Math.max(0, Math.min(1, currentDur / maxDur));
+            const r = Math.round(139 * (1 - ratio));
+            const g = Math.round(255 * ratio);
+            const b = Math.round(102 * ratio);
+            durEl.style.color = `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function renderHearts(hp) {
+            const clamped = Math.max(0, Math.min(20, Number(hp) || 0));
+            const full = Math.floor(clamped / 2);
+            const half = (clamped % 2 >= 1) ? 1 : 0;
+            const empty = Math.max(0, 10 - full - half);
+            return '❤️'.repeat(full) + (half ? '🧡' : '') + '🖤'.repeat(empty);
+        }
+
+        firebase.database().ref('matchState').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+
+            if (data.gamemode) {
+                document.getElementById('gamemode-label').innerText = data.gamemode;
+            }
+
+            // Player 1
+            const p1Name = data.p1Name || "Steve";
+            document.getElementById('p1-name').innerText = p1Name;
+            document.getElementById('p1-avatar').src = `https://minotar.net/avatar/${encodeURIComponent(p1Name)}/64.png`;
+            const p1Hp = Number(data.p1Hp ?? 20);
+            document.getElementById('p1-hearts').innerText = renderHearts(p1Hp);
+            document.getElementById('p1-hp-text').innerText = `${p1Hp.toFixed(1)} HP`;
+            document.getElementById('p1-score').innerText = data.p1Score ?? 0;
+            document.getElementById('p1-totem').classList.toggle('active', Boolean(data.p1Totem));
+
+            updateArmorPiece('p1-helmet-img', 'p1-helmet-dur', data.p1Helmet, data.p1HelmetDur);
+            updateArmorPiece('p1-chest-img', 'p1-chest-dur', data.p1Chest, data.p1ChestDur);
+            updateArmorPiece('p1-legs-img', 'p1-legs-dur', data.p1Legs, data.p1LegsDur);
+            updateArmorPiece('p1-boots-img', 'p1-boots-dur', data.p1Boots, data.p1BootsDur);
+
+            // Player 2
+            const p2Name = data.p2Name || "Alex";
+            document.getElementById('p2-name').innerText = p2Name;
+            document.getElementById('p2-avatar').src = `https://minotar.net/avatar/${encodeURIComponent(p2Name)}/64.png`;
+            const p2Hp = Number(data.p2Hp ?? 20);
+            document.getElementById('p2-hearts').innerText = renderHearts(p2Hp);
+            document.getElementById('p2-hp-text').innerText = `${p2Hp.toFixed(1)} HP`;
+            document.getElementById('p2-score').innerText = data.p2Score ?? 0;
+            document.getElementById('p2-totem').classList.toggle('active', Boolean(data.p2Totem));
+
+            updateArmorPiece('p2-helmet-img', 'p2-helmet-dur', data.p2Helmet, data.p2HelmetDur);
+            updateArmorPiece('p2-chest-img', 'p2-chest-dur', data.p2Chest, data.p2ChestDur);
+            updateArmorPiece('p2-legs-img', 'p2-legs-dur', data.p2Legs, data.p2LegsDur);
+            updateArmorPiece('p2-boots-img', 'p2-boots-dur', data.p2Boots, data.p2BootsDur);
+        });
+    </script>
+</body>
+</html>

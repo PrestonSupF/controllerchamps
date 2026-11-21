@@ -2,295 +2,326 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Controller Champs</title>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controller Champs | Admin Control Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
         body {
-            background: #121216;
+            background-color: #0d1017;
             color: #ffffff;
-            padding: 40px;
+            font-family: 'Inter', sans-serif;
+            padding: 30px 20px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
         }
-
-        .admin-container {
-            width: 620px;
-            background: #1a1a24;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-        }
-
         h1 {
-            font-size: 22px;
-            margin-bottom: 20px;
-            color: #ffaa00;
-            text-align: center;
-            letter-spacing: 0.5px;
-        }
-
-        .match-card {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .player-row {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .player-title {
-            font-size: 14px;
-            color: #888;
+            color: #f5b942;
+            font-size: 24px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-
-        .stats-grid {
+        .panel-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 20px;
+            width: 100%;
+            max-width: 960px;
         }
-
-        .stat-box {
+        @media (max-width: 768px) {
+            .panel-container { grid-template-columns: 1fr; }
+        }
+        .card {
+            background: #161b26;
+            border: 2px solid #2a3142;
+            border-radius: 14px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 16px;
         }
-
-        label {
-            font-size: 12px;
-            color: #aaa;
+        .card h2 {
+            font-size: 16px;
+            color: #f5b942;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            border-bottom: 1px solid #2a3142;
+            padding-bottom: 10px;
         }
-
-        input[type="text"] {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 6px;
-            padding: 8px 12px;
-            color: #fff;
-            font-size: 15px;
-            font-weight: 600;
-            outline: none;
-        }
-
-        input[type="text"]:focus {
-            border-color: #ffaa00;
-        }
-
-        .value-display {
-            font-size: 15px;
-            font-weight: 600;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #ddd;
-        }
-
-        .score-controls {
+        .row {
             display: flex;
-            gap: 8px;
-        }
-
-        button {
-            flex: 1;
-            background: #ffaa00;
-            color: #111;
-            border: none;
-            padding: 8px;
-            font-weight: 700;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        button:hover { background: #ffbb22; }
-
-        button.decrement {
-            background: #333;
-            color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        button.decrement:hover { background: #444; }
-
-        .totem-toggle-btn {
-            background: #444;
-            color: #fff;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .totem-toggle-btn.active-totem {
-            background: #28a745;
-            color: #fff;
-            border-color: #32b651;
-        }
-
-        .action-row {
-            display: flex;
+            align-items: center;
+            justify-content: space-between;
             gap: 10px;
         }
-
-        .save-btn {
-            background: #007bff;
+        input[type="text"], input[type="number"] {
+            background: #0f131c;
+            border: 1px solid #363f54;
+            border-radius: 8px;
+            padding: 8px 12px;
             color: #fff;
+            font-size: 14px;
+            width: 100%;
         }
-        .save-btn:hover { background: #1589ff; }
+        button {
+            background: #232a3b;
+            border: 1px solid #3b4661;
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        button:hover {
+            border-color: #f5b942;
+            background: #2c354a;
+        }
+        button.primary {
+            background: #f5b942;
+            color: #111;
+            border-color: #f5b942;
+        }
+        button.primary:hover {
+            background: #ffca5c;
+        }
+        button.danger {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            color: #f87171;
+        }
+        button.danger:hover {
+            background: rgba(239, 68, 68, 0.35);
+        }
+        .kit-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .kit-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: flex-start;
+            padding: 8px 10px;
+            font-size: 12px;
+        }
+        .kit-btn.active {
+            border-color: #f5b942;
+            background: rgba(245, 185, 66, 0.2);
+            color: #f5b942;
+        }
+        .kit-btn img {
+            width: 18px;
+            height: 18px;
+            image-rendering: pixelated;
+        }
+        .veto-status-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 13px;
+            color: #cbd5e1;
+        }
+        .picked-highlight {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid #10b981;
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
 
-    <div class="admin-container">
-        <h1>Controller Champs</h1>
-        <div class="match-card">
-            
-            <!-- Player 1 Control -->
-            <div class="player-row">
-                <div class="player-title">Player 1</div>
-                <div class="stat-box">
-                    <label>Player Name (Supports . prefix for Bedrock)</label>
-                    <input type="text" id="p1-name-input" placeholder="e.g. Steve">
+    <h1>Controller Champs • Admin Panel</h1>
+
+    <div class="panel-container">
+        <!-- Manual Gamemode Switcher -->
+        <div class="card">
+            <h2>Manual Gamemode Override</h2>
+            <p style="font-size: 12px; color: #9ba3af;">Click any kit below to immediately update the live stream HUD:</p>
+            <div class="kit-buttons" id="manual-kit-grid"></div>
+            <div class="row" style="margin-top: 4px;">
+                <input type="text" id="custom-gamemode" placeholder="Or type custom kit name (e.g. Crystal (Low Tier))...">
+                <button class="primary" onclick="setCustomGamemode()">Set</button>
+            </div>
+        </div>
+
+        <!-- Veto Draft Management & Reset -->
+        <div class="card">
+            <h2>Tournament Veto Controls</h2>
+            <div class="veto-status-list" id="veto-admin-status">
+                Loading veto status...
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: auto;">
+                <button class="danger" onclick="resetVetoOnly()">Reset Veto Draft Only (Keep Players)</button>
+                <button class="danger" onclick="resetForNewPlayers()">Full Reset for New Players (Veto + Scores + Names)</button>
+            </div>
+        </div>
+
+        <!-- Score & Player Management -->
+        <div class="card" style="grid-column: 1 / -1;">
+            <h2>Live Match Players & Scoreboard</h2>
+            <div class="row">
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                    <label style="font-size: 12px; color: #f5b942; font-weight: 700;">PLAYER 1</label>
+                    <div class="row">
+                        <input type="text" id="admin-p1-name" placeholder="Player 1 Name">
+                        <button onclick="updateMatchField('p1Name', document.getElementById('admin-p1-name').value)">Save</button>
+                    </div>
+                    <div class="row">
+                        <button onclick="adjustScore('p1Score', -1)">-1 Score</button>
+                        <span id="admin-p1-score" style="font-size: 20px; font-weight: 800;">0</span>
+                        <button class="primary" onclick="adjustScore('p1Score', 1)">+1 Score</button>
+                    </div>
                 </div>
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <label>HP</label>
-                        <div id="ctrl-p1-hp" class="value-display">20 / 20</div>
+
+                <div style="width: 2px; height: 80px; background: #2a3142; margin: 0 16px;"></div>
+
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                    <label style="font-size: 12px; color: #f5b942; font-weight: 700;">PLAYER 2</label>
+                    <div class="row">
+                        <input type="text" id="admin-p2-name" placeholder="Player 2 Name">
+                        <button onclick="updateMatchField('p2Name', document.getElementById('admin-p2-name').value)">Save</button>
                     </div>
-                    <div class="stat-box">
-                        <label>Score (<span id="ctrl-p1-score-val" style="color: #ffaa00;">0</span>)</label>
-                        <div class="score-controls">
-                            <button class="decrement" onclick="adjustScore('p1Score', -1)">-</button>
-                            <button onclick="adjustScore('p1Score', 1)">+</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <label>Totem</label>
-                        <button id="p1-totem-toggle" class="totem-toggle-btn" onclick="toggleTotem('p1')">Totem: OFF</button>
-                    </div>
-                    <div class="stat-box" style="justify-content: flex-end;">
-                        <button class="save-btn" onclick="updatePlayerName('p1Name', 'p1-name-input')">Update P1 Name</button>
+                    <div class="row">
+                        <button onclick="adjustScore('p2Score', -1)">-1 Score</button>
+                        <span id="admin-p2-score" style="font-size: 20px; font-weight: 800;">0</span>
+                        <button class="primary" onclick="adjustScore('p2Score', 1)">+1 Score</button>
                     </div>
                 </div>
             </div>
-
-            <!-- Player 2 Control -->
-            <div class="player-row">
-                <div class="player-title">Player</div>
-                <div class="stat-box">
-                    <label>Player Name (Supports . prefix for Bedrock)</label>
-                    <input type="text" id="p2-name-input" placeholder="e.g. Alex">
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <label>HP</label>
-                        <div id="ctrl-p2-hp" class="value-display">20 / 20</div>
-                    </div>
-                    <div class="stat-box">
-                        <label>Score (<span id="ctrl-p2-score-val" style="color: #ffaa00;">0</span>)</label>
-                        <div class="score-controls">
-                            <button class="decrement" onclick="adjustScore('p2Score', -1)">-</button>
-                            <button onclick="adjustScore('p2Score', 1)">+</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <label>Totem Status Override</label>
-                        <button id="p2-totem-toggle" class="totem-toggle-btn" onclick="toggleTotem('p2')">Totem: OFF</button>
-                    </div>
-                    <div class="stat-box" style="justify-content: flex-end;">
-                        <button class="save-btn" onclick="updatePlayerName('p2Name', 'p2-name-input')">Update P2 Name</button>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script>
-        const firebaseConfig = {
+        firebase.initializeApp({
             databaseURL: "https://champs-6c8c8-default-rtdb.firebaseio.com/"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const dbRef = firebase.database().ref('matchState');
-
-        let isInitialLoad = true;
-
-        dbRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (!data) return;
-
-            if (isInitialLoad) {
-                if (data.p1Name) document.getElementById('p1-name-input').value = data.p1Name;
-                if (data.p2Name) document.getElementById('p2-name-input').value = data.p2Name;
-                isInitialLoad = false;
-            }
-
-            document.getElementById('ctrl-p1-hp').innerText = `${data.p1Hp !== undefined ? data.p1Hp : 20} / 20`;
-            document.getElementById('ctrl-p1-score-val').innerText = data.p1Score !== undefined ? data.p1Score : 0;
-            
-            const p1TotemBtn = document.getElementById('p1-totem-toggle');
-            if (data.p1Totem) {
-                p1TotemBtn.innerText = "Totem: ON";
-                p1TotemBtn.classList.add('active-totem');
-            } else {
-                p1TotemBtn.innerText = "Totem: OFF";
-                p1TotemBtn.classList.remove('active-totem');
-            }
-
-            document.getElementById('ctrl-p2-hp').innerText = `${data.p2Hp !== undefined ? data.p2Hp : 20} / 20`;
-            document.getElementById('ctrl-p2-score-val').innerText = data.p2Score !== undefined ? data.p2Score : 0;
-            
-            const p2TotemBtn = document.getElementById('p2-totem-toggle');
-            if (data.p2Totem) {
-                p2TotemBtn.innerText = "Totem: ON";
-                p2TotemBtn.classList.add('active-totem');
-            } else {
-                p2TotemBtn.innerText = "Totem: OFF";
-                p2TotemBtn.classList.remove('active-totem');
-            }
         });
 
-        function updatePlayerName(nameKey, inputId) {
-            const nameVal = document.getElementById(inputId).value.trim();
-            dbRef.update({ [nameKey]: nameVal });
+        const db = firebase.database();
+        const BEDROCK_BASE = "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/items";
+
+        const GAMEMODES = [
+            { id: "Sword", icon: `${BEDROCK_BASE}/diamond_sword.png` },
+            { id: "SMP", icon: `${BEDROCK_BASE}/ender_pearl.png` },
+            { id: "Crystal", icon: `${BEDROCK_BASE}/end_crystal.png` },
+            { id: "Mace", icon: `${BEDROCK_BASE}/mace.png` },
+            { id: "Pot", icon: `${BEDROCK_BASE}/potion_bottle_splash.png` },
+            { id: "UHC", icon: `${BEDROCK_BASE}/golden_apple.png` },
+            { id: "Diamond SMP", icon: `${BEDROCK_BASE}/chorus_fruit.png` },
+            { id: "Spear Mace", icon: `${BEDROCK_BASE}/netherite_sword.png` },
+            { id: "Cart", icon: `${BEDROCK_BASE}/tnt_minecart.png` }
+        ];
+
+        let matchData = {};
+
+        function setGamemode(mode) {
+            db.ref("matchState").update({ gamemode: mode });
         }
 
-        function adjustScore(scoreKey, amount) {
-            dbRef.once('value').then((snapshot) => {
-                const data = snapshot.val() || {};
-                let currentScore = data[scoreKey] !== undefined ? data[scoreKey] : 0;
-                dbRef.update({ [scoreKey]: Math.max(0, currentScore + amount) });
+        function setCustomGamemode() {
+            const val = document.getElementById("custom-gamemode").value.trim();
+            if (val) {
+                setGamemode(val);
+                document.getElementById("custom-gamemode").value = "";
+            }
+        }
+
+        function updateMatchField(field, value) {
+            if (!value.trim()) return;
+            db.ref("matchState").update({ [field]: value.trim() });
+        }
+
+        function adjustScore(field, delta) {
+            const current = Number(matchData[field]) || 0;
+            db.ref("matchState").update({ [field]: Math.max(0, current + delta) });
+        }
+
+        function resetVetoOnly() {
+            db.ref("vetoState").set({
+                step: 0,
+                kits: {},
+                mutualP1: false,
+                mutualP2: false
             });
         }
 
-        function toggleTotem(playerPrefix) {
-            dbRef.once('value').then((snapshot) => {
-                const data = snapshot.val() || {};
-                const currentState = data[playerPrefix + 'Totem'] || false;
-                dbRef.update({
-                    [playerPrefix + 'Totem']: !currentState,
-                    [playerPrefix + 'TotemToggle']: true // Flags manual override
-                });
+        function resetForNewPlayers() {
+            db.ref("vetoState").set({
+                step: 0,
+                kits: {},
+                mutualP1: false,
+                mutualP2: false
+            });
+            db.ref("matchState").update({
+                p1Name: "Steve",
+                p2Name: "Alex",
+                p1Score: 0,
+                p2Score: 0
             });
         }
+
+        db.ref("matchState").on("value", (snap) => {
+            matchData = snap.val() || {};
+            const activeMode = matchData.gamemode || "Sword";
+
+            if (document.activeElement !== document.getElementById("admin-p1-name")) {
+                document.getElementById("admin-p1-name").value = matchData.p1Name || "";
+            }
+            if (document.activeElement !== document.getElementById("admin-p2-name")) {
+                document.getElementById("admin-p2-name").value = matchData.p2Name || "";
+            }
+
+            document.getElementById("admin-p1-score").innerText = matchData.p1Score ?? 0;
+            document.getElementById("admin-p2-score").innerText = matchData.p2Score ?? 0;
+
+            const grid = document.getElementById("manual-kit-grid");
+            grid.innerHTML = GAMEMODES.map(g => `
+                <button class="kit-btn ${activeMode.toLowerCase() === g.id.toLowerCase() ? 'active' : ''}" onclick="setGamemode('${g.id}')">
+                    <img src="${g.icon}" alt="${g.id}">
+                    <span>${g.id}</span>
+                </button>
+            `).join("");
+        });
+
+        db.ref("vetoState").on("value", (snap) => {
+            const veto = snap.val() || { step: 0, kits: {} };
+            const statusBox = document.getElementById("veto-admin-status");
+            const kitsMap = veto.kits || {};
+
+            const picked = Object.entries(kitsMap)
+                .filter(([_, v]) => v.status === "picked")
+                .sort((a, b) => a[1].order - b[1].order);
+
+            let html = `<div><strong>Draft Progress:</strong> Step ${Math.min(veto.step || 0, 9)} / 9</div>`;
+
+            if (picked.length > 0) {
+                html += picked.map(([kitName, info], idx) => `
+                    <div class="picked-highlight">
+                        <span><strong>Duel ${idx + 1}:</strong> ${kitName} (${info.by})</span>
+                        <button class="primary" style="padding: 4px 10px; font-size: 11px;" onclick="setGamemode('${kitName}')">Activate on HUD</button>
+                    </div>
+                `).join("");
+            } else {
+                html += `<div style="color: #9ba3af;">No duel kits locked in yet.</div>`;
+            }
+
+            statusBox.innerHTML = html;
+        });
     </script>
 </body>
 </html>

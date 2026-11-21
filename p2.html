@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player 2 • Gamemode Veto</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #0d1017;
+            background-image: radial-gradient(circle at top, #181e2c 0%, #0d1017 75%);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding: 28px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        h1 { color: #f5b942; font-size: 26px; text-transform: uppercase; letter-spacing: 1px; }
+        .player-box {
+            display: flex; align-items: center; gap: 14px;
+            background: #161b26; border: 2px solid #2b3346; border-radius: 12px;
+            padding: 14px 20px; width: 100%; max-width: 900px;
+        }
+        .player-box img {
+            width: 50px; height: 50px; border-radius: 8px;
+            border: 2px solid #f5b942; image-rendering: pixelated;
+        }
+        .player-box input {
+            flex: 1; background: #0f131c; border: 1px solid #363f54;
+            border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 15px; font-weight: 600;
+        }
+        .banner {
+            background: rgba(245, 185, 66, 0.14); border: 2px solid #f5b942;
+            border-radius: 12px; padding: 14px 20px; width: 100%; max-width: 900px;
+            text-align: center;
+        }
+        .banner-title { font-size: 18px; font-weight: 800; }
+        .banner-sub { font-size: 13px; color: #cbd5e1; margin-top: 4px; }
+        .mutual-btn {
+            margin-top: 10px; background: #1e2536; border: 2px solid #f5b942;
+            color: #fff; padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer;
+        }
+        .mutual-btn.done { background: #10b981; border-color: #10b981; color: #062419; }
+        .grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+            width: 100%; max-width: 900px;
+        }
+        @media (max-width: 680px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+        .card {
+            background: #161b26; border: 2px solid #2b3346; border-radius: 12px;
+            padding: 18px; display: flex; flex-direction: column; align-items: center; gap: 10px;
+            cursor: pointer; transition: transform 0.15s, border-color 0.15s;
+        }
+        .card:hover:not(.disabled) { transform: translateY(-2px); border-color: #f5b942; }
+        .card.disabled { opacity: 0.5; cursor: not-allowed; }
+        .card.banned { border-color: #ef4444; background: #171015; }
+        .card.picked { border-color: #10b981; background: rgba(16, 185, 129, 0.15); }
+        .card img { width: 44px; height: 44px; image-rendering: pixelated; }
+        .card-name { font-weight: 700; font-size: 15px; }
+        .card-tag { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: #232a3b; color: #9ba3af; }
+        .card.banned .card-tag { background: rgba(239, 68, 68, 0.22); color: #f87171; }
+        .card.picked .card-tag { background: #10b981; color: #062419; }
+    </style>
+</head>
+<body>
+    <h1>Player 2 • Tournament Veto</h1>
+
+    <div class="player-box">
+        <img id="p2-head" src="https://minotar.net/avatar/Alex/64.png" alt="P2">
+        <input type="text" id="p2-input" placeholder="Enter Player 2 Minecraft Username..." autocomplete="off">
+    </div>
+
+    <div class="banner">
+        <div class="banner-title" id="status-title">Loading...</div>
+        <div class="banner-sub" id="status-sub"></div>
+        <button class="mutual-btn" id="mutual-btn" style="display:none;" onclick="confirmMutual()">Confirm Final Mutual Ban</button>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script>
+        const PLAYER_KEY = "p2";
+        firebase.initializeApp({ databaseURL: "https://champs-6c8c8-default-rtdb.firebaseio.com/" });
+        const db = firebase.database();
+        const BASE = "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/items";
+
+        const GAMEMODES = [
+            { id: "Sword", name: "Sword", icon: `${BASE}/diamond_sword.png` },
+            { id: "SMP", name: "SMP", icon: `${BASE}/ender_pearl.png` },
+            { id: "Crystal", name: "Crystal", icon: `${BASE}/end_crystal.png` },
+            { id: "Mace", name: "Mace", icon: `${BASE}/mace.png` },
+            { id: "Pot", name: "Pot", icon: `${BASE}/potion_bottle_splash.png` },
+            { id: "UHC", name: "UHC", icon: `${BASE}/golden_apple.png` },
+            { id: "Diamond SMP", name: "Diamond SMP", icon: `${BASE}/chorus_fruit.png` },
+            { id: "Spear Mace", name: "Spear Mace", icon: `${BASE}/netherite_sword.png` },
+            { id: "Cart", name: "Cart", icon: `${BASE}/tnt_minecart.png` }
+        ];
+
+        const STEPS = [
+            { actor: "p1", action: "ban", text: "Waiting for Player 1 to BAN (1 of 2)..." },
+            { actor: "p1", action: "ban", text: "Waiting for Player 1 to BAN (2 of 2)..." },
+            { actor: "p2", action: "ban", text: "Your Turn: BAN a gamemode (1 of 2)" },
+            { actor: "p2", action: "ban", text: "Your Turn: BAN a gamemode (2 of 2)" },
+            { actor: "p1", action: "pick", text: "Waiting for Player 1 to PICK their Duel Gamemode..." },
+            { actor: "p2", action: "ban", text: "Your Turn: BAN a remaining gamemode" },
+            { actor: "p2", action: "pick", text: "Your Turn: PICK your Duel Gamemode!" },
+            { actor: "p1", action: "ban", text: "Waiting for Player 1 to BAN 1 gamemode..." },
+            { actor: "mutual", action: "ban", text: "Final Step: Mutually ban the last leftover gamemode" }
+        ];
+
+        let matchState = {};
+        let vetoState = { step: 0, kits: {}, mutualP1: false, mutualP2: false };
+
+        let nameDebounce;
+        const p2Input = document.getElementById("p2-input");
+        p2Input.addEventListener("input", () => {
+            const val = p2Input.value.trim() || "Alex";
+            document.getElementById("p2-head").src = `https://minotar.net/avatar/${encodeURIComponent(val)}/64.png`;
+            clearTimeout(nameDebounce);
+            nameDebounce = setTimeout(() => db.ref("matchState").update({ p2Name: val }), 300);
+        });
+
+        db.ref("matchState").on("value", s => {
+            matchState = s.val() || {};
+            const name = matchState.p2Name || "Alex";
+            if (document.activeElement !== p2Input && matchState.p2Name) p2Input.value = matchState.p2Name;
+            document.getElementById("p2-head").src = `https://minotar.net/avatar/${encodeURIComponent(name)}/64.png`;
+            render();
+        });
+
+        db.ref("vetoState").on("value", s => {
+            const v = s.val();
+            vetoState = v ? { step: v.step || 0, kits: v.kits || {}, mutualP1: Boolean(v.mutualP1), mutualP2: Boolean(v.mutualP2) }
+                          : { step: 0, kits: {}, mutualP1: false, mutualP2: false };
+            render();
+        });
+
+        function onSelectKit(kitId) {
+            const step = vetoState.step;
+            if (step >= STEPS.length) return;
+            const rule = STEPS[step];
+            if (rule.actor !== PLAYER_KEY) return;
+            if (vetoState.kits[kitId]) return;
+
+            const actorName = matchState.p2Name || "Player 2";
+            const kits = { ...(vetoState.kits || {}) };
+            kits[kitId] = {
+                status: rule.action === "ban" ? "banned" : "picked",
+                by: actorName,
+                actor: PLAYER_KEY,
+                order: step + 1
+            };
+
+            db.ref("vetoState").update({ step: step + 1, kits });
+        }
+
+        function confirmMutual() {
+            if (vetoState.step !== 8) return;
+            const nextP1 = vetoState.mutualP1;
+            const nextP2 = !vetoState.mutualP2;
+
+            if (nextP1 && nextP2) {
+                const kits = { ...(vetoState.kits || {}) };
+                const leftover = GAMEMODES.find(g => !kits[g.id]);
+                if (leftover) {
+                    kits[leftover.id] = { status: "banned", by: "Mutual Vote", actor: "mutual", order: 9 };
+                }
+                db.ref("vetoState").update({ step: 9, kits, mutualP1: true, mutualP2: true });
+            } else {
+                db.ref("vetoState").update({ mutualP2: nextP2 });
+            }
+        }
+
+        function render() {
+            const step = vetoState.step;
+            const titleEl = document.getElementById("status-title");
+            const subEl = document.getElementById("status-sub");
+            const mutualBtn = document.getElementById("mutual-btn");
+
+            if (step < STEPS.length) {
+                const rule = STEPS[step];
+                titleEl.innerText = rule.text;
+                subEl.innerText = `Step ${step + 1} of 9`;
+                if (rule.actor === "mutual") {
+                    mutualBtn.style.display = "inline-block";
+                    mutualBtn.classList.toggle("done", vetoState.mutualP2);
+                    mutualBtn.innerText = vetoState.mutualP2 ? "✓ You Confirmed Mutual Ban" : "Confirm Final Mutual Ban";
+                } else {
+                    mutualBtn.style.display = "none";
+                }
+            } else {
+                mutualBtn.style.display = "none";
+                titleEl.innerText = "Veto Complete!";
+                subEl.innerText = "2 gamemodes remain for the match.";
+            }
+
+            const isMyTurn = step < STEPS.length && STEPS[step].actor === PLAYER_KEY;
+            const kitsMap = vetoState.kits || {};
+
+            document.getElementById("grid").innerHTML = GAMEMODES.map(g => {
+                const state = kitsMap[g.id];
+                let cls = "card";
+                let tag = isMyTurn ? (STEPS[step].action === "ban" ? "Click to Ban" : "Click to Pick") : "Available";
+
+                if (state) {
+                    cls += ` disabled ${state.status}`;
+                    tag = state.status === "banned" ? `Banned (${state.by})` : `Picked (${state.by})`;
+                } else if (!isMyTurn) {
+                    cls += " disabled";
+                }
+
+                return `
+                    <div class="${cls}" onclick="onSelectKit('${g.id}')">
+                        <img src="${g.icon}" alt="${g.name}">
+                        <div class="card-name">${g.name}</div>
+                        <div class="card-tag">${tag}</div>
+                    </div>
+                `;
+            }).join("");
+        }
+    </script>
+</body>
+</html>

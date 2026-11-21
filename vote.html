@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vote Choices Display</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #0d1017;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding: 28px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 22px;
+        }
+        h1 { color: #f5b942; font-size: 26px; text-transform: uppercase; letter-spacing: 1px; }
+        .players-header {
+            display: flex; align-items: center; justify-content: center; gap: 30px;
+            background: #161b26; border: 2px solid #f5b942; border-radius: 12px;
+            padding: 14px 26px; width: 100%; max-width: 920px;
+        }
+        .p-info { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; }
+        .p-info img { width: 38px; height: 38px; border-radius: 6px; image-rendering: pixelated; }
+        .columns {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
+            width: 100%; max-width: 920px;
+        }
+        @media (max-width: 740px) { .columns { grid-template-columns: 1fr; } }
+        .col {
+            background: #161b26; border: 2px solid #2b3346; border-radius: 12px;
+            padding: 16px; display: flex; flex-direction: column; gap: 10px;
+        }
+        .col h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.8px; padding-bottom: 8px; border-bottom: 1px solid #2b3346; }
+        .col.picks h2 { color: #34d399; }
+        .col.bans h2 { color: #f87171; }
+        .col.rem h2 { color: #f5b942; }
+        .item-row {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #0f131c; border: 1px solid #252c3d; border-radius: 8px; padding: 8px 12px;
+        }
+        .item-left { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; }
+        .item-left img { width: 24px; height: 24px; image-rendering: pixelated; }
+        .meta { font-size: 11px; color: #9ba3af; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <h1>Tournament Vote Choices</h1>
+
+    <div class="players-header">
+        <div class="p-info">
+            <img id="p1-avatar" src="https://minotar.net/avatar/Steve/64.png" alt="P1">
+            <span id="p1-name">Player 1</span>
+        </div>
+        <span style="color:#f5b942; font-weight:800;">VS</span>
+        <div class="p-info">
+            <span id="p2-name">Player 2</span>
+            <img id="p2-avatar" src="https://minotar.net/avatar/Alex/64.png" alt="P2">
+        </div>
+    </div>
+
+    <div class="columns">
+        <div class="col picks">
+            <h2>Duel Picks (Final 2)</h2>
+            <div id="picks-list"></div>
+        </div>
+        <div class="col bans">
+            <h2>Banned Gamemodes</h2>
+            <div id="bans-list"></div>
+        </div>
+        <div class="col rem">
+            <h2>Remaining / Active</h2>
+            <div id="rem-list"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script>
+        firebase.initializeApp({ databaseURL: "https://champs-6c8c8-default-rtdb.firebaseio.com/" });
+        const db = firebase.database();
+        const BASE = "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/items";
+
+        const GAMEMODES = [
+            { id: "Sword", name: "Sword", icon: `${BASE}/diamond_sword.png` },
+            { id: "SMP", name: "SMP", icon: `${BASE}/ender_pearl.png` },
+            { id: "Crystal", name: "Crystal", icon: `${BASE}/end_crystal.png` },
+            { id: "Mace", name: "Mace", icon: `${BASE}/mace.png` },
+            { id: "Pot", name: "Pot", icon: `${BASE}/potion_bottle_splash.png` },
+            { id: "UHC", name: "UHC", icon: `${BASE}/golden_apple.png` },
+            { id: "Diamond SMP", name: "Diamond SMP", icon: `${BASE}/chorus_fruit.png` },
+            { id: "Spear Mace", name: "Spear Mace", icon: `${BASE}/netherite_sword.png` },
+            { id: "Cart", name: "Cart", icon: `${BASE}/tnt_minecart.png` }
+        ];
+
+        let matchState = {};
+        let vetoState = { step: 0, kits: {} };
+
+        db.ref("matchState").on("value", s => {
+            matchState = s.val() || {};
+            const p1 = matchState.p1Name || "Player 1";
+            const p2 = matchState.p2Name || "Player 2";
+            document.getElementById("p1-name").innerText = p1;
+            document.getElementById("p2-name").innerText = p2;
+            document.getElementById("p1-avatar").src = `https://minotar.net/avatar/${encodeURIComponent(p1)}/64.png`;
+            document.getElementById("p2-avatar").src = `https://minotar.net/avatar/${encodeURIComponent(p2)}/64.png`;
+            render();
+        });
+
+        db.ref("vetoState").on("value", s => {
+            vetoState = s.val() || { step: 0, kits: {} };
+            render();
+        });
+
+        function render() {
+            const kitsMap = vetoState.kits || {};
+            const picks = [];
+            const bans = [];
+            const rem = [];
+
+            GAMEMODES.forEach(g => {
+                const info = kitsMap[g.id];
+                if (!info) rem.push(g);
+                else if (info.status === "picked") picks.push({ ...g, ...info });
+                else if (info.status === "banned") bans.push({ ...g, ...info });
+            });
+
+            picks.sort((a, b) => (a.order || 0) - (b.order || 0));
+            bans.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            document.getElementById("picks-list").innerHTML = picks.length
+                ? picks.map(p => `<div class="item-row"><div class="item-left"><img src="${p.icon}"><span>${p.name}</span></div><span class="meta">${p.by}</span></div>`).join("")
+                : `<div class="meta">No picks yet</div>`;
+
+            document.getElementById("bans-list").innerHTML = bans.length
+                ? bans.map(b => `<div class="item-row"><div class="item-left"><img src="${b.icon}"><span>${b.name}</span></div><span class="meta">${b.by}</span></div>`).join("")
+                : `<div class="meta">No bans yet</div>`;
+
+            document.getElementById("rem-list").innerHTML = rem.length
+                ? rem.map(r => `<div class="item-row"><div class="item-left"><img src="${r.icon}"><span>${r.name}</span></div><span class="meta">Open</span></div>`).join("")
+                : `<div class="meta">Draft complete</div>`;
+        }
+    </script>
+</body>
+</html>

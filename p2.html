@@ -89,6 +89,7 @@
         firebase.initializeApp({ databaseURL: "https://champs-6c8c8-default-rtdb.firebaseio.com/" });
         const db = firebase.database();
         const BASE = "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/items";
+        const spear = "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/spear/";
 
         const GAMEMODES = [
             { id: "Sword", name: "Sword", icon: `${BASE}/diamond_sword.png` },
@@ -96,12 +97,12 @@
             { id: "Crystal", name: "Crystal", icon: `${BASE}/end_crystal.png` },
             { id: "Mace", name: "Mace", icon: `${BASE}/mace.png` },
             { id: "Pot", name: "Pot", icon: `${BASE}/potion_bottle_splash.png` },
-            { id: "UHC", name: "UHC", icon: `${BASE}/golden_apple.png` },
+            { id: "UHC", name: "UHC", icon: `${BASE}/apple_golden.png` },
             { id: "Diamond SMP", name: "Diamond SMP", icon: `${BASE}/chorus_fruit.png` },
-            { id: "Spear Mace", name: "Spear Mace", icon: `${BASE}/netherite_sword.png` },
-            { id: "Cart", name: "Cart", icon: `${BASE}/tnt_minecart.png` }
+            { id: "Spear Mace", name: "Spear Mace", icon: `${spear}/netherite_spear.png` },
+            { id: "Cart", name: "Cart", icon: `${BASE}/minecart_tnt.png` }
         ];
-
+        
         const STEPS = [
             { actor: "p1", action: "ban", text: "Waiting for Player 1 to BAN (1 of 2)..." },
             { actor: "p1", action: "ban", text: "Waiting for Player 1 to BAN (2 of 2)..." },

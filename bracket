@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controller Champs • Tournament Bracket</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #0d1017;
+            background-image:
+                radial-gradient(circle at 50% 0%, rgba(245, 185, 66, 0.12) 0%, transparent 55%),
+                radial-gradient(circle at top, #181e2c 0%, #0d1017 80%);
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding: 36px 24px 56px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 28px;
+        }
+
+        .header {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-width: 780px;
+        }
+        .eyebrow {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #f5b942;
+        }
+        .header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            color: #ffffff;
+            text-shadow: 0 4px 18px rgba(0, 0, 0, 0.65);
+        }
+        .header h1 span {
+            color: #f5b942;
+        }
+        .meta-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+        .meta-pill {
+            background: rgba(22, 27, 38, 0.9);
+            border: 1px solid #2d364b;
+            border-radius: 999px;
+            padding: 5px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #cbd5e1;
+        }
+        .meta-pill strong {
+            color: #f5b942;
+        }
+
+        /* Champion Banner */
+        .champion-banner {
+            display: none;
+            align-items: center;
+            gap: 16px;
+            background: linear-gradient(135deg, rgba(245, 185, 66, 0.22) 0%, rgba(22, 27, 38, 0.96) 100%);
+            border: 2px solid #f5b942;
+            border-radius: 16px;
+            padding: 14px 26px;
+            box-shadow: 0 10px 30px rgba(245, 185, 66, 0.18);
+        }
+        .champion-banner.visible {
+            display: flex;
+        }
+        .champion-banner img {
+            width: 52px;
+            height: 52px;
+            border-radius: 10px;
+            border: 2px solid #f5b942;
+            image-rendering: pixelated;
+            background: #10131c;
+        }
+        .champion-label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.6px;
+            text-transform: uppercase;
+            color: #f5b942;
+        }
+        .champion-name {
+            font-size: 22px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        /* Scrollable Bracket Tree */
+        .bracket-viewport {
+            width: 100%;
+            max-width: 1520px;
+            overflow-x: auto;
+            padding: 10px 8px 24px;
+        }
+        .bracket-tree {
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            gap: 44px;
+            min-width: max-content;
+            margin: 0 auto;
+        }
+
+        .round-column {
+            display: flex;
+            flex-direction: column;
+            min-width: 248px;
+        }
+        .round-title {
+            text-align: center;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+            color: #f5b942;
+            background: rgba(245, 185, 66, 0.08);
+            border: 1px solid rgba(245, 185, 66, 0.28);
+            border-radius: 8px;
+            padding: 7px 12px;
+            margin-bottom: 18px;
+        }
+
+        .round-matches {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            gap: 20px;
+        }
+
+        .match-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Connector lines between rounds */
+        .round-column:not(:last-child) .match-wrapper::after {
+            content: "";
+            position: absolute;
+            right: -22px;
+            top: 50%;
+            width: 22px;
+            height: 2px;
+            background: #2f384e;
+        }
+
+        .match-card {
+            width: 100%;
+            background: linear-gradient(180deg, #171c28 0%, #121620 100%);
+            border: 2px solid #2a3246;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+            transition: border-color 0.2s ease;
+        }
+        .match-card.decided {
+            border-color: rgba(245, 185, 66, 0.55);
+        }
+
+        .slot-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 9px 12px;
+            background: transparent;
+            transition: background 0.15s ease;
+        }
+        .slot-row + .slot-row {
+            border-top: 1px solid #232a3c;
+        }
+        .slot-row.winner {
+            background: rgba(16, 185, 129, 0.14);
+        }
+        .slot-row.loser {
+            opacity: 0.48;
+        }
+        .slot-row.bye {
+            background: rgba(148, 163, 184, 0.06);
+        }
+
+        .slot-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            flex: 1;
+        }
+        .slot-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 1px solid #38425c;
+            background: #0e1118;
+            image-rendering: pixelated;
+            flex-shrink: 0;
+        }
+        .slot-row.winner .slot-avatar {
+            border-color: #10b981;
+        }
+        .slot-name {
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #f1f5f9;
+        }
+        .slot-name.tbd {
+            color: #64748b;
+            font-style: italic;
+            font-weight: 600;
+        }
+        .slot-name.bye-text {
+            color: #94a3b8;
+            font-size: 12px;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .win-tag {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            padding: 2px 7px;
+            border-radius: 6px;
+            background: rgba(16, 185, 129, 0.22);
+            color: #34d399;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="eyebrow">Controller Champs • Elimination Draw</div>
+        <h1>Tournament <span>Bracket</span></h1>
+        <div class="meta-bar">
+            <div class="meta-pill">Base Players: <strong id="meta-players">8</strong></div>
+            <div class="meta-pill">Total Rounds: <strong id="meta-rounds">3</strong></div>
+            <div class="meta-pill">Status: <strong id="meta-status">Live Sync</strong></div>
+        </div>
+    </div>
+
+    <div class="champion-banner" id="champion-banner">
+        <img id="champion-avatar" src="https://minotar.net/avatar/Steve/64.png" alt="Champion">
+        <div>
+            <div class="champion-label">Tournament Champion</div>
+            <div class="champion-name" id="champion-name">—</div>
+        </div>
+    </div>
+
+    <div class="bracket-viewport">
+        <div class="bracket-tree" id="bracket-tree"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script>
+        firebase.initializeApp({
+            databaseURL: "https://champs-6c8c8-default-rtdb.firebaseio.com/"
+        });
+        const db = firebase.database();
+
+        const DEFAULT_PLAYERS = [
+            "Player1", "Player2", "Player3", "Player4",
+            "Player5", "Player6", "Player7", "Player8"
+        ];
+
+        function nextPowerOfTwo(n) {
+            let p = 1;
+            while (p < n) p <<= 1;
+            return Math.max(2, p);
+        }
+
+        function sanitizeName(raw) {
+            if (!raw || typeof raw !== "string") return "";
+            return raw.trim();
+        }
+
+        function isBye(name) {
+            return name === "__BYE__";
+        }
+
+        function avatarUrl(name) {
+            const clean = (!name || isBye(name)) ? "Steve" : name;
+            return `https://minotar.net/avatar/${encodeURIComponent(clean)}/64.png`;
+        }
+
+        function getRoundLabel(roundIndex, totalRounds) {
+            const remaining = totalRounds - roundIndex;
+            if (remaining === 1) return "Grand Final";
+            if (remaining === 2) return "Semi-Finals";
+            if (remaining === 3) return "Quarter-Finals";
+            return `Round ${roundIndex + 1}`;
+        }
+
+        /**
+         * Builds a deterministic bracket structure from basePlayers + saved winners.
+         * Automatically places byes when basePlayerCount is not a power of two.
+         */
+        function buildBracketData(bracketState) {
+            const rawCount = Number(bracketState.playerCount);
+            const playerCount = Number.isFinite(rawCount)
+                ? Math.max(2, Math.min(32, Math.floor(rawCount)))
+                : 8;
+
+            const savedPlayers = Array.isArray(bracketState.players) ? bracketState.players : [];
+            const activePlayers = [];
+            for (let i = 0; i < playerCount; i++) {
+                const val = sanitizeName(savedPlayers[i]);
+                activePlayers.push(val || DEFAULT_PLAYERS[i] || `Player${i + 1}`);
+            }
+
+            const slots = nextPowerOfTwo(playerCount);
+            const totalRounds = Math.log2(slots);
+            const winnersMap = bracketState.winners || {};
+
+            // Seed players + byes across round 1 slots
+            const round1Slots = [];
+            for (let i = 0; i < slots; i++) {
+                round1Slots.push(i < activePlayers.length ? activePlayers[i] : "__BYE__");
+            }
+
+            const rounds = [];
+            let prevSlots = round1Slots;
+
+            for (let r = 0; r < totalRounds; r++) {
+                const matchCount = prevSlots.length / 2;
+                const matches = [];
+                const nextRoundSlots = [];
+
+                for (let m = 0; m < matchCount; m++) {
+                    const p1 = prevSlots[m * 2] ?? "";
+                    const p2 = prevSlots[m * 2 + 1] ?? "";
+                    const matchKey = `r${r}_m${m}`;
+
+                    let winner = "";
+                    const p1IsBye = isBye(p1);
+                    const p2IsBye = isBye(p2);
+
+                    if (p1IsBye && p2IsBye) {
+                        winner = "__BYE__";
+                    } else if (p1IsBye && p2) {
+                        winner = p2;
+                    } else if (p2IsBye && p1) {
+                        winner = p1;
+                    } else {
+                        const chosen = sanitizeName(winnersMap[matchKey]);
+                        if (chosen && (chosen === p1 || chosen === p2)) {
+                            winner = chosen;
+                        }
+                    }
+
+                    matches.push({
+                        key: matchKey,
+                        roundIndex: r,
+                        matchIndex: m,
+                        p1,
+                        p2,
+                        winner
+                    });
+
+                    nextRoundSlots.push(winner || "");
+                }
+
+                rounds.push({
+                    index: r,
+                    label: getRoundLabel(r, totalRounds),
+                    matches
+                });
+
+                prevSlots = nextRoundSlots;
+            }
+
+            const finalMatch = rounds[rounds.length - 1]?.matches[0];
+            const champion = (finalMatch && finalMatch.winner && !isBye(finalMatch.winner))
+                ? finalMatch.winner
+                : "";
+
+            return { playerCount, totalRounds, rounds, champion };
+        }
+
+        function renderSlot(name, isWinner, isLoser) {
+            if (!name) {
+                return `
+                    <div class="slot-row">
+                        <div class="slot-left">
+                            <img class="slot-avatar" src="${avatarUrl("Steve")}" alt="TBD">
+                            <span class="slot-name tbd">TBD</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (isBye(name)) {
+                return `
+                    <div class="slot-row bye">
+                        <div class="slot-left">
+                            <span class="slot-name bye-text">BYE (Auto-Advance)</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const rowClasses = ["slot-row"];
+            if (isWinner) rowClasses.push("winner");
+            if (isLoser) rowClasses.push("loser");
+
+            return `
+                <div class="${rowClasses.join(" ")}">
+                    <div class="slot-left">
+                        <img class="slot-avatar" src="${avatarUrl(name)}" alt="${name}">
+                        <span class="slot-name">${name}</span>
+                    </div>
+                    ${isWinner ? `<span class="win-tag">WIN</span>` : ""}
+                </div>
+            `;
+        }
+
+        function renderBracket(state) {
+            const { playerCount, totalRounds, rounds, champion } = buildBracketData(state || {});
+
+            document.getElementById("meta-players").innerText = playerCount;
+            document.getElementById("meta-rounds").innerText = totalRounds;
+            document.getElementById("meta-status").innerText = champion ? "Completed" : "Live";
+
+            const champBanner = document.getElementById("champion-banner");
+            if (champion) {
+                champBanner.classList.add("visible");
+                document.getElementById("champion-name").innerText = champion;
+                document.getElementById("champion-avatar").src = avatarUrl(champion);
+            } else {
+                champBanner.classList.remove("visible");
+            }
+
+            const tree = document.getElementById("bracket-tree");
+            tree.innerHTML = rounds.map(round => `
+                <div class="round-column">
+                    <div class="round-title">${round.label}</div>
+                    <div class="round-matches">
+                        ${round.matches.map(match => {
+                            const hasWinner = Boolean(match.winner) && !isBye(match.winner);
+                            const p1Win = hasWinner && match.winner === match.p1;
+                            const p2Win = hasWinner && match.winner === match.p2;
+                            const p1Lose = hasWinner && match.p1 && !isBye(match.p1) && !p1Win;
+                            const p2Lose = hasWinner && match.p2 && !isBye(match.p2) && !p2Win;
+
+                            return `
+                                <div class="match-wrapper">
+                                    <div class="match-card ${hasWinner ? "decided" : ""}">
+                                        ${renderSlot(match.p1, p1Win, p1Lose)}${renderSlot(match.p2, p2Win, p2Lose)}
+                                    </div>
+                                </div>
+                            `;
+                        }).join("")}
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        db.ref("bracketState").on("value", (snap) => {
+            renderBracket(snap.val() || {});
+        });
+    </script>
+</body>
+</html>

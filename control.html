@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controller Champs | Admin Control Panel</title>
+    <title>Controller Champs • Admin Control Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
@@ -15,11 +15,20 @@
             background-color: #0d1017;
             color: #ffffff;
             font-family: 'Inter', sans-serif;
-            padding: 30px 20px;
+            padding: 30px 20px 60px;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 24px;
+        }
+        .top-bar {
+            width: 100%;
+            max-width: 1040px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
         }
         h1 {
             color: #f5b942;
@@ -27,14 +36,32 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+        .nav-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .link-btn {
+            display: inline-block;
+            text-decoration: none;
+            background: rgba(245, 185, 66, 0.14);
+            border: 1px solid #f5b942;
+            color: #f5b942;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
         .panel-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
             width: 100%;
-            max-width: 960px;
+            max-width: 1040px;
         }
-        @media (max-width: 768px) {
+        @media (max-width: 800px) {
             .panel-container { grid-template-columns: 1fr; }
         }
         .card {
@@ -45,6 +72,9 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
+        }
+        .card.full-width {
+            grid-column: 1 / -1;
         }
         .card h2 {
             font-size: 16px;
@@ -59,21 +89,29 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
+            flex-wrap: wrap;
         }
-        input[type="text"], input[type="number"] {
+        input[type="text"], input[type="number"], select {
             background: #0f131c;
             border: 1px solid #363f54;
             border-radius: 8px;
             padding: 8px 12px;
             color: #fff;
             font-size: 14px;
+        }
+        input[type="text"], select {
             width: 100%;
+        }
+        input[type="number"] {
+            width: 96px;
+            font-weight: 700;
+            text-align: center;
         }
         button {
             background: #232a3b;
             border: 1px solid #3b4661;
             color: #fff;
-            padding: 10px 14px;
+            padding: 9px 14px;
             border-radius: 8px;
             font-weight: 700;
             font-size: 13px;
@@ -99,6 +137,10 @@
         }
         button.danger:hover {
             background: rgba(239, 68, 68, 0.35);
+        }
+        button.small {
+            padding: 6px 10px;
+            font-size: 12px;
         }
         .kit-buttons {
             display: grid;
@@ -139,11 +181,113 @@
             justify-content: space-between;
             align-items: center;
         }
+
+        /* Victory Form */
+        .victory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+        .field-col {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .field-col label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: #9ba3af;
+        }
+
+        /* Bracket Editor Styles */
+        .player-roster-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+            gap: 10px;
+        }
+        .roster-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #0f131c;
+            border: 1px solid #262e40;
+            border-radius: 8px;
+            padding: 6px 10px;
+        }
+        .seed-num {
+            font-size: 12px;
+            font-weight: 800;
+            color: #f5b942;
+            min-width: 22px;
+        }
+        .roster-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 5px;
+            image-rendering: pixelated;
+            flex-shrink: 0;
+        }
+        .roster-item input {
+            padding: 5px 8px;
+            font-size: 13px;
+        }
+
+        .matches-manager-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 12px;
+        }
+        .admin-match-box {
+            background: #0f131c;
+            border: 1px solid #262e40;
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .admin-match-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 700;
+            color: #9ba3af;
+            text-transform: uppercase;
+        }
+        .contender-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 7px 10px;
+            font-size: 13px;
+            text-align: left;
+        }
+        .contender-btn.is-winner {
+            background: rgba(16, 185, 129, 0.22);
+            border-color: #10b981;
+            color: #34d399;
+        }
+        .toast {
+            font-size: 12px;
+            color: #34d399;
+            font-weight: 600;
+            min-height: 16px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Controller Champs • Admin Panel</h1>
+    <div class="top-bar">
+        <h1>Controller Champs • Admin Panel</h1>
+        <div class="nav-links">
+            <a class="link-btn" href="victory.html" target="_blank">Open Victory Panel ↗</a>
+            <a class="link-btn" href="bracket.html" target="_blank">Open Live Bracket ↗</a>
+        </div>
+    </div>
 
     <div class="panel-container">
         <!-- Manual Gamemode Switcher -->
@@ -169,11 +313,48 @@
             </div>
         </div>
 
+        <!-- Victory Panel & Auto Bracket Winner -->
+        <div class="card full-width">
+            <h2>Victory Screen & Auto-Bracket Winner</h2>
+            <div class="victory-grid">
+                <div class="field-col">
+                    <label for="victory-match-select">Bracket Match (Optional Auto-Advance)</label>
+                    <select id="victory-match-select" onchange="onVictoryMatchChange()">
+                        <option value="">— Custom / Manual Winner —</option>
+                    </select>
+                </div>
+
+                <div class="field-col">
+                    <label for="victory-winner-input">Winner Username</label>
+                    <input type="text" id="victory-winner-input" placeholder="e.g. Steve">
+                </div>
+
+                <div class="field-col">
+                    <label for="victory-opponent-input">Opponent Username (Optional)</label>
+                    <input type="text" id="victory-opponent-input" placeholder="e.g. Alex">
+                </div>
+
+                <div class="field-col">
+                    <label for="victory-round-input">Round / Label</label>
+                    <input type="text" id="victory-round-input" value="Quarter-Finals" placeholder="e.g. Grand Final">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="row">
+                    <button class="primary" onclick="triggerVictoryAndAdvance()">Declare Winner & Update Bracket</button>
+                    <button onclick="setVictoryVisibility(true)">Show Victory Panel</button>
+                    <button class="danger" onclick="setVictoryVisibility(false)">Hide Victory Panel</button>
+                </div>
+                <span id="victory-current-status" style="font-size: 12px; color: #9ba3af;">Status: Ready</span>
+            </div>
+        </div>
+
         <!-- Score & Player Management -->
-        <div class="card" style="grid-column: 1 / -1;">
+        <div class="card full-width">
             <h2>Live Match Players & Scoreboard</h2>
             <div class="row">
-                <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 240px;">
                     <label style="font-size: 12px; color: #f5b942; font-weight: 700;">PLAYER 1</label>
                     <div class="row">
                         <input type="text" id="admin-p1-name" placeholder="Player 1 Name">
@@ -186,9 +367,9 @@
                     </div>
                 </div>
 
-                <div style="width: 2px; height: 80px; background: #2a3142; margin: 0 16px;"></div>
+                <div style="width: 2px; height: 80px; background: #2a3142; margin: 0 12px;"></div>
 
-                <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 240px;">
                     <label style="font-size: 12px; color: #f5b942; font-weight: 700;">PLAYER 2</label>
                     <div class="row">
                         <input type="text" id="admin-p2-name" placeholder="Player 2 Name">
@@ -201,6 +382,51 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Tournament Bracket Manager -->
+        <div class="card full-width">
+            <h2>Tournament Bracket Setup & Match Progression</h2>
+
+            <div class="row">
+                <div class="row">
+                    <label for="base-player-count" style="font-size: 13px; font-weight: 700; color: #cbd5e1;">
+                        Base Players (2–32):
+                    </label>
+                    <input type="number" id="base-player-count" min="2" max="32" value="8">
+                    <button class="primary" onclick="applyBasePlayerCount()">Apply Count</button>
+                </div>
+
+                <div class="row">
+                    <span style="font-size: 12px; color: #9ba3af;">Presets:</span>
+                    <button class="small" onclick="setPlayerCountPreset(4)">4</button>
+                    <button class="small" onclick="setPlayerCountPreset(8)">8</button>
+                    <button class="small" onclick="setPlayerCountPreset(16)">16</button>
+                    <button class="small" onclick="fillDefaultNames()">Fill Default Names</button>
+                    <button class="danger small" onclick="clearBracketWinners()">Reset Winners</button>
+                </div>
+            </div>
+
+            <div>
+                <div class="row" style="margin-bottom: 10px;">
+                    <label style="font-size: 12px; color: #f5b942; font-weight: 700; text-transform: uppercase;">
+                        Base Participant Usernames
+                    </label>
+                    <button class="primary small" onclick="saveAllBracketPlayers()">Save All Usernames</button>
+                </div>
+                <div class="player-roster-grid" id="roster-inputs"></div>
+            </div>
+
+            <div>
+                <div class="row" style="margin-bottom: 10px;">
+                    <label style="font-size: 12px; color: #f5b942; font-weight: 700; text-transform: uppercase;">
+                        Matches & Winners (Click a player to advance them, or "Load Match" to set HUD players)
+                    </label>
+                </div>
+                <div class="matches-manager-grid" id="admin-matches-grid"></div>
+            </div>
+
+            <div class="toast" id="bracket-toast"></div>
         </div>
     </div>
 
@@ -228,6 +454,16 @@
         ];
 
         let matchData = {};
+        let bracketData = { playerCount: 8, players: [], winners: {} };
+        let victoryData = {};
+        let latestAdminMatches = [];
+
+        function showToast(msg) {
+            const el = document.getElementById("bracket-toast");
+            el.innerText = msg;
+            clearTimeout(el._timer);
+            el._timer = setTimeout(() => { el.innerText = ""; }, 2800);
+        }
 
         function setGamemode(mode) {
             db.ref("matchState").update({ gamemode: mode });
@@ -275,6 +511,349 @@
             });
         }
 
+        /* Bracket Helpers */
+        function nextPowerOfTwo(n) {
+            let p = 1;
+            while (p < n) p <<= 1;
+            return Math.max(2, p);
+        }
+
+        function isBye(name) {
+            return name === "__BYE__";
+        }
+
+        function getRoundLabel(roundIndex, totalRounds) {
+            const remaining = totalRounds - roundIndex;
+            if (remaining === 1) return "Grand Final";
+            if (remaining === 2) return "Semi-Finals";
+            if (remaining === 3) return "Quarter-Finals";
+            return `Round ${roundIndex + 1}`;
+        }
+
+        function getNormalizedPlayers(state = bracketData) {
+            const rawCount = Number(state.playerCount);
+            const count = Number.isFinite(rawCount) ? Math.max(2, Math.min(32, Math.floor(rawCount))) : 8;
+            const saved = Array.isArray(state.players) ? state.players : [];
+            const list = [];
+            for (let i = 0; i < count; i++) {
+                const trimmed = (saved[i] || "").trim();
+                list.push(trimmed || `Player${i + 1}`);
+            }
+            return { count, list };
+        }
+
+        function computeRoundsForAdmin(state) {
+            const { count, list } = getNormalizedPlayers(state);
+            const slots = nextPowerOfTwo(count);
+            const totalRounds = Math.log2(slots);
+            const winnersMap = state.winners || {};
+
+            const r1 = Array.from({ length: slots }, (_, i) => i < list.length ? list[i] : "__BYE__");
+            const rounds = [];
+            let prev = r1;
+
+            for (let r = 0; r < totalRounds; r++) {
+                const matchCount = prev.length / 2;
+                const matches = [];
+                const nextSlots = [];
+                const label = getRoundLabel(r, totalRounds);
+
+                for (let m = 0; m < matchCount; m++) {
+                    const p1 = prev[m * 2] ?? "";
+                    const p2 = prev[m * 2 + 1] ?? "";
+                    const key = `r${r}_m${m}`;
+
+                    let winner = "";
+                    if (isBye(p1) && isBye(p2)) winner = "__BYE__";
+                    else if (isBye(p1) && p2) winner = p2;
+                    else if (isBye(p2) && p1) winner = p1;
+                    else {
+                        const saved = (winnersMap[key] || "").trim();
+                        if (saved && (saved === p1 || saved === p2)) winner = saved;
+                    }
+
+                    matches.push({
+                        key,
+                        roundIndex: r,
+                        matchIndex: m,
+                        roundLabel: label,
+                        p1,
+                        p2,
+                        winner
+                    });
+                    nextSlots.push(winner || "");
+                }
+
+                rounds.push({ roundIndex: r, label, matches });
+                prev = nextSlots;
+            }
+            return rounds;
+        }
+
+        /* Victory & Auto-Bracket Sync */
+        function syncVictorySelectOptions(rounds) {
+            const select = document.getElementById("victory-match-select");
+            const prevSelection = select.value;
+            const flat = [];
+
+            rounds.forEach(round => {
+                round.matches.forEach(match => {
+                    const p1Playable = match.p1 && !isBye(match.p1);
+                    const p2Playable = match.p2 && !isBye(match.p2);
+                    if (p1Playable || p2Playable) {
+                        flat.push(match);
+                    }
+                });
+            });
+
+            latestAdminMatches = flat;
+
+            select.innerHTML = `<option value="">— Custom / Manual Winner —</option>` + flat.map(m => {
+                const n1 = !m.p1 ? "TBD" : isBye(m.p1) ? "BYE" : m.p1;
+                const n2 = !m.p2 ? "TBD" : isBye(m.p2) ? "BYE" : m.p2;
+                return `<option value="${m.key}">${m.roundLabel} • M${m.matchIndex + 1}: ${n1} vs ${n2}</option>`;
+            }).join("");
+
+            if (prevSelection && flat.some(m => m.key === prevSelection)) {
+                select.value = prevSelection;
+            }
+        }
+
+        function onVictoryMatchChange() {
+            const key = document.getElementById("victory-match-select").value;
+            if (!key) return;
+            const match = latestAdminMatches.find(m => m.key === key);
+            if (!match) return;
+
+            document.getElementById("victory-round-input").value = match.roundLabel;
+            const p1Playable = match.p1 && !isBye(match.p1);
+            const p2Playable = match.p2 && !isBye(match.p2);
+
+            if (match.winner && !isBye(match.winner)) {
+                document.getElementById("victory-winner-input").value = match.winner;
+                const opp = match.winner === match.p1 ? (p2Playable ? match.p2 : "") : (p1Playable ? match.p1 : "");
+                document.getElementById("victory-opponent-input").value = opp;
+            } else if (p1Playable) {
+                document.getElementById("victory-winner-input").value = match.p1;
+                document.getElementById("victory-opponent-input").value = p2Playable ? match.p2 : "";
+            }
+        }
+
+        function triggerVictoryAndAdvance() {
+            const winner = document.getElementById("victory-winner-input").value.trim();
+            if (!winner) {
+                showToast("Enter a winner username first.");
+                return;
+            }
+
+            const opponent = document.getElementById("victory-opponent-input").value.trim();
+            const roundLabel = document.getElementById("victory-round-input").value.trim() || "Tournament Match";
+            const matchKey = document.getElementById("victory-match-select").value;
+
+            db.ref("victoryState").set({
+                visible: true,
+                winner,
+                opponent,
+                roundLabel,
+                gamemode: matchData.gamemode || "Sword",
+                p1Score: matchData.p1Score ?? 0,
+                p2Score: matchData.p2Score ?? 0,
+                showScore: true,
+                updatedAt: Date.now()
+            });
+
+            if (matchKey) {
+                db.ref(`bracketState/winners/${matchKey}`).set(winner);
+                showToast(`Declared ${winner} winner & updated bracket.`);
+            } else {
+                showToast(`Victory panel updated for ${winner}.`);
+            }
+        }
+
+        function setVictoryVisibility(visible) {
+            db.ref("victoryState").update({ visible });
+        }
+
+        function applyBasePlayerCount() {
+            const input = document.getElementById("base-player-count");
+            const count = Math.max(2, Math.min(32, Math.floor(Number(input.value) || 8)));
+            input.value = count;
+
+            const currentRoster = collectRosterInputs(count);
+            db.ref("bracketState").update({
+                playerCount: count,
+                players: currentRoster,
+                winners: {}
+            });
+            showToast(`Bracket updated to ${count} base players.`);
+        }
+
+        function setPlayerCountPreset(count) {
+            document.getElementById("base-player-count").value = count;
+            applyBasePlayerCount();
+        }
+
+        function collectRosterInputs(count) {
+            const list = [];
+            for (let i = 0; i < count; i++) {
+                const el = document.getElementById(`roster-input-${i}`);
+                const val = el ? el.value.trim() : (bracketData.players?.[i] || "");
+                list.push(val || `Player${i + 1}`);
+            }
+            return list;
+        }
+
+        function saveAllBracketPlayers() {
+            const { count } = getNormalizedPlayers(bracketData);
+            const list = collectRosterInputs(count);
+            db.ref("bracketState").update({
+                playerCount: count,
+                players: list
+            });
+            showToast("All base player usernames saved to Firebase.");
+        }
+
+        function fillDefaultNames() {
+            const { count } = getNormalizedPlayers(bracketData);
+            const defaults = Array.from({ length: count }, (_, i) => `Player${i + 1}`);
+            db.ref("bracketState").update({
+                playerCount: count,
+                players: defaults,
+                winners: {}
+            });
+            showToast("Populated default player names.");
+        }
+
+        function clearBracketWinners() {
+            db.ref("bracketState/winners").set({});
+            showToast("All bracket match winners cleared.");
+        }
+
+        function toggleMatchWinner(matchKey, playerName, opponentName = "", roundLabel = "Tournament Match") {
+            if (!playerName || isBye(playerName)) return;
+            const currentWinner = (bracketData.winners || {})[matchKey];
+            const nextWinner = currentWinner === playerName ? "" : playerName;
+            db.ref(`bracketState/winners/${matchKey}`).set(nextWinner || null);
+
+            if (nextWinner) {
+                db.ref("victoryState").set({
+                    visible: true,
+                    winner: nextWinner,
+                    opponent: isBye(opponentName) ? "" : opponentName,
+                    roundLabel,
+                    gamemode: matchData.gamemode || "Sword",
+                    p1Score: matchData.p1Score ?? 0,
+                    p2Score: matchData.p2Score ?? 0,
+                    showScore: true,
+                    updatedAt: Date.now()
+                });
+                document.getElementById("victory-winner-input").value = nextWinner;
+                document.getElementById("victory-opponent-input").value = isBye(opponentName) ? "" : opponentName;
+                document.getElementById("victory-round-input").value = roundLabel;
+            }
+        }
+
+        function loadMatchIntoHud(p1, p2) {
+            const updates = {};
+            if (p1 && !isBye(p1)) updates.p1Name = p1;
+            if (p2 && !isBye(p2)) updates.p2Name = p2;
+            if (Object.keys(updates).length > 0) {
+                updates.p1Score = 0;
+                updates.p2Score = 0;
+                db.ref("matchState").update(updates);
+                showToast(`Loaded ${updates.p1Name || "P1"} vs ${updates.p2Name || "P2"} into HUD.`);
+            }
+        }
+
+        function renderBracketAdmin(state) {
+            bracketData = {
+                playerCount: Number(state.playerCount) || 8,
+                players: Array.isArray(state.players) ? state.players : [],
+                winners: state.winners || {}
+            };
+
+            const { count, list } = getNormalizedPlayers(bracketData);
+            const countInput = document.getElementById("base-player-count");
+            if (document.activeElement !== countInput) {
+                countInput.value = count;
+            }
+
+            const rosterContainer = document.getElementById("roster-inputs");
+            const existingFocusedId = document.activeElement?.id || "";
+
+            rosterContainer.innerHTML = list.map((name, idx) => {
+                const safeAvatarName = name || "Steve";
+                return `
+                    <div class="roster-item">
+                        <span class="seed-num">#${idx + 1}</span>
+                        <img class="roster-avatar" src="https://minotar.net/avatar/${encodeURIComponent(safeAvatarName)}/64.png" alt="${name}">
+                        <input
+                            type="text"
+                            id="roster-input-${idx}"
+                            value="${name.replace(/"/g, "&quot;")}"
+                            placeholder="Player ${idx + 1} IGN"
+                            oninput="this.previousElementSibling.src = 'https://minotar.net/avatar/' + encodeURIComponent(this.value.trim() || 'Steve') + '/64.png'"
+                        >
+                    </div>
+                `;
+            }).join("");
+
+            if (existingFocusedId.startsWith("roster-input-")) {
+                const restoreEl = document.getElementById(existingFocusedId);
+                if (restoreEl) restoreEl.focus();
+            }
+
+            const rounds = computeRoundsForAdmin(bracketData);
+            syncVictorySelectOptions(rounds);
+
+            const matchesGrid = document.getElementById("admin-matches-grid");
+            const cardsHtml = [];
+
+            rounds.forEach(round => {
+                round.matches.forEach(match => {
+                    const p1Playable = match.p1 && !isBye(match.p1);
+                    const p2Playable = match.p2 && !isBye(match.p2);
+                    const canLoadHud = p1Playable && p2Playable;
+
+                    cardsHtml.push(`
+                        <div class="admin-match-box">
+                            <div class="admin-match-header">
+                                <span>${match.roundLabel} • M${match.matchIndex + 1}</span>
+                                ${canLoadHud ? `<button class="small" onclick="loadMatchIntoHud('${match.p1.replace(/'/g, "\\'")}', '${match.p2.replace(/'/g, "\\'")}')">Load Match</button>` : ""}
+                            </div>
+                            <button
+                                class="contender-btn ${match.winner === match.p1 && p1Playable ? "is-winner" : ""}"
+                                ${!p1Playable ? "disabled" : `onclick="toggleMatchWinner('${match.key}', '${match.p1.replace(/'/g, "\\'")}', '${(match.p2 || "").replace(/'/g, "\\'")}', '${match.roundLabel.replace(/'/g, "\\'")}')"`}
+                            >
+                                <span>${!match.p1 ? "TBD" : isBye(match.p1) ? "BYE" : match.p1}</span>
+                                <span>${match.winner === match.p1 && p1Playable ? "✓ Winner" : p1Playable ? "Set Win" : ""}</span>
+                            </button>
+                            <button
+                                class="contender-btn ${match.winner === match.p2 && p2Playable ? "is-winner" : ""}"
+                                ${!p2Playable ? "disabled" : `onclick="toggleMatchWinner('${match.key}', '${match.p2.replace(/'/g, "\\'")}', '${(match.p1 || "").replace(/'/g, "\\'")}', '${match.roundLabel.replace(/'/g, "\\'")}')"`}
+                            >
+                                <span>${!match.p2 ? "TBD" : isBye(match.p2) ? "BYE" : match.p2}</span>
+                                <span>${match.winner === match.p2 && p2Playable ? "✓ Winner" : p2Playable ? "Set Win" : ""}</span>
+                            </button>
+                        </div>
+                    `);
+                });
+            });
+
+            matchesGrid.innerHTML = cardsHtml.join("");
+        }
+
+        db.ref("victoryState").on("value", (snap) => {
+            victoryData = snap.val() || {};
+            const statusEl = document.getElementById("victory-current-status");
+            if (victoryData.winner) {
+                const vis = victoryData.visible === false ? "Hidden" : "Visible";
+                statusEl.innerText = `Winner: ${victoryData.winner} (${vis})`;
+            } else {
+                statusEl.innerText = "Status: Ready";
+            }
+        });
+
         db.ref("matchState").on("value", (snap) => {
             matchData = snap.val() || {};
             const activeMode = matchData.gamemode || "Sword";
@@ -321,6 +900,10 @@
             }
 
             statusBox.innerHTML = html;
+        });
+
+        db.ref("bracketState").on("value", (snap) => {
+            renderBracketAdmin(snap.val() || {});
         });
     </script>
 </body>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controller Champs • Victory Screen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: transparent;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px;
+            overflow: hidden;
+        }
+
+        .victory-card {
+            position: relative;
+            width: 100%;
+            max-width: 780px;
+            background: linear-gradient(180deg, rgba(24, 29, 41, 0.97) 0%, rgba(13, 16, 23, 0.99) 100%);
+            border: 3px solid #f5b942;
+            border-radius: 20px;
+            padding: 28px 34px;
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            box-shadow:
+                0 18px 48px rgba(0, 0, 0, 0.75),
+                0 0 36px rgba(245, 185, 66, 0.18);
+        }
+        .victory-card.hidden {
+            display: none;
+        }
+
+        /* Bust Frame */
+        .bust-stage {
+            position: relative;
+            width: 176px;
+            height: 192px;
+            flex-shrink: 0;
+            border-radius: 16px;
+            border: 2px solid rgba(245, 185, 66, 0.65);
+            background:
+                radial-gradient(circle at 50% 35%, rgba(245, 185, 66, 0.24) 0%, rgba(16, 20, 30, 0.95) 72%);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-top: 10px;
+            overflow: hidden;
+        }
+        .bust-img {
+            width: 156px;
+            height: auto;
+            max-height: 180px;
+            object-fit: contain;
+            image-rendering: pixelated;
+            filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.75));
+        }
+
+        /* Victory Details */
+        .victory-details {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .kicker {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 2.2px;
+            text-transform: uppercase;
+            color: #f5b942;
+        }
+        .winner-name {
+            font-size: 40px;
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: 0.4px;
+            color: #ffffff;
+            text-shadow: 0 4px 16px rgba(0, 0, 0, 0.65);
+            word-break: break-word;
+        }
+        .match-context {
+            font-size: 15px;
+            font-weight: 600;
+            color: #cbd5e1;
+        }
+
+        .badges-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 6px;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(15, 19, 28, 0.9);
+            border: 1px solid #2e374d;
+            border-radius: 10px;
+            padding: 7px 13px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            color: #f8fafc;
+        }
+        .badge.gold {
+            border-color: rgba(245, 185, 66, 0.55);
+            color: #f5b942;
+        }
+        .badge img {
+            width: 20px;
+            height: 20px;
+            image-rendering: pixelated;
+        }
+
+        @media (max-width: 680px) {
+            .victory-card {
+                flex-direction: column;
+                text-align: center;
+                padding: 24px 20px;
+                gap: 20px;
+            }
+            .badges-row {
+                justify-content: center;
+            }
+            .winner-name {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="victory-card" id="victory-card">
+        <div class="bust-stage">
+            <img
+                id="winner-bust"
+                class="bust-img"
+                src="https://minotar.net/bust/Steve/160.png"
+                alt="Winner Bust"
+            >
+        </div>
+
+        <div class="victory-details">
+            <div class="kicker" id="victory-kicker">Match Victory</div>
+            <div class="winner-name" id="winner-name">Steve</div>
+            <div class="match-context" id="match-context">Defeated opponent in Tournament Draw</div>
+
+            <div class="badges-row">
+                <div class="badge gold" id="score-badge">Score: 0 - 0</div>
+                <div class="badge" id="kit-badge">
+                    <img id="kit-icon" src="https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/items/diamond_sword.png" alt="Kit">
+                    <span id="kit-label">Sword</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script>
+        firebase.initializeApp({
+            databaseURL: "https://champs-6c8c8-default-rtdb.firebaseio.com/"
+        });
+        const db = firebase.database();
+
+        const BEDROCK_ITEMS = "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/items";
+        const KIT_ICONS = {
+            "sword": "diamond_sword",
+            "smp": "ender_pearl",
+            "crystal": "end_crystal",
+            "crystal (low tier)": "end_crystal",
+            "crystal (high tier)": "end_crystal",
+            "uhc": "golden_apple",
+            "pot": "potion_bottle_splash",
+            "mace": "mace",
+            "spear mace": "netherite_sword",
+            "diamond smp": "chorus_fruit",
+            "cart": "tnt_minecart"
+        };
+
+        let victoryState = {};
+        let matchState = {};
+
+        const bustImg = document.getElementById("winner-bust");
+        bustImg.addEventListener("error", () => {
+            const name = encodeURIComponent(victoryState.winner || matchState.p1Name || "Steve");
+            const fallbackSrc = `https://minotar.net/avatar/${name}/160.png`;
+            if (bustImg.src !== fallbackSrc) {
+                bustImg.src = fallbackSrc;
+            }
+        });
+
+        function renderVictory() {
+            const card = document.getElementById("victory-card");
+            if (victoryState.visible === false) {
+                card.classList.add("hidden");
+                return;
+            }
+            card.classList.remove("hidden");
+
+            const winner = (victoryState.winner || matchState.p1Name || "Steve").trim();
+            const opponent = (victoryState.opponent || "").trim();
+            const roundLabel = (victoryState.roundLabel || "Tournament Match").trim();
+            const gamemode = (victoryState.gamemode || matchState.gamemode || "Sword").trim();
+
+            const p1Score = victoryState.p1Score ?? matchState.p1Score ?? 0;
+            const p2Score = victoryState.p2Score ?? matchState.p2Score ?? 0;
+
+            document.getElementById("victory-kicker").innerText = `${roundLabel} • Victory`;
+            document.getElementById("winner-name").innerText = winner;
+
+            const contextEl = document.getElementById("match-context");
+            if (opponent) {
+                contextEl.innerText = `${winner} advances past ${opponent}`;
+            } else {
+                contextEl.innerText = `${winner} claims the match victory`;
+            }
+
+            bustImg.src = `https://minotar.net/bust/${encodeURIComponent(winner)}/160.png`;
+
+            const scoreBadge = document.getElementById("score-badge");
+            if (victoryState.showScore === false) {
+                scoreBadge.style.display = "none";
+            } else {
+                scoreBadge.style.display = "inline-flex";
+                scoreBadge.innerText = `Score: ${p1Score} - ${p2Score}`;
+            }
+
+            const iconKey = KIT_ICONS[gamemode.toLowerCase()] || "diamond_sword";
+            document.getElementById("kit-icon").src = `${BEDROCK_ITEMS}/${iconKey}.png`;
+            document.getElementById("kit-label").innerText = gamemode;
+        }
+
+        db.ref("victoryState").on("value", (snap) => {
+            victoryState = snap.val() || {};
+            renderVictory();
+        });
+
+        db.ref("matchState").on("value", (snap) => {
+            matchState = snap.val() || {};
+            renderVictory();
+        });
+    </script>
+</body>
+</html>
